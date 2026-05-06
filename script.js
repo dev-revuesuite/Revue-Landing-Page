@@ -7,8 +7,8 @@ tt.addEventListener('click',()=>{
 
 // Nav
 const nb=document.getElementById('navbar');window.addEventListener('scroll',()=>nb.classList.toggle('scrolled',window.scrollY>20));
-document.getElementById('mt').addEventListener('click',()=>document.getElementById('navLinks').classList.toggle('open'));
-document.getElementById('navLinks').querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>document.getElementById('navLinks').classList.remove('open')));
+document.getElementById('mt').addEventListener('click',function(){document.getElementById('navLinks').classList.toggle('open');this.classList.toggle('open');});
+document.getElementById('navLinks').querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{document.getElementById('navLinks').classList.remove('open');document.getElementById('mt').classList.remove('open');}));
 
 // Tabs
 document.querySelectorAll('.ptab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.ptab').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.querySelectorAll('.tc').forEach(c=>c.classList.remove('active'));document.getElementById('tab-'+t.dataset.tab).classList.add('active')});});
