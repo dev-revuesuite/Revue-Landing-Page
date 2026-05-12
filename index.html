@@ -980,7 +980,7 @@
 
   <script>
     let selectedPlan = 'studio';
-    let formSubmitted = false; // Track if Brevo form was submitted
+    let formSubmitted = sessionStorage.getItem('brevoFormSubmitted') === 'true'; // Check if form was already submitted
     const plans = {
       freelancer: { name: 'Freelancer Early Access', price: '₹299/month for 12 months' },
       studio: { name: 'Studio Early Access', price: '₹1,999/month for 12 months' }
@@ -1004,13 +1004,17 @@
 
     // Handle Reserve My Spot button click
     function handleReserveClick() {
-      if (!formSubmitted) {
+      // Check sessionStorage for submission status
+      const isSubmitted = sessionStorage.getItem('brevoFormSubmitted') === 'true';
+      const savedEmail = sessionStorage.getItem('reservedEmail');
+
+      if (!isSubmitted || !savedEmail) {
         alert('Please fill the form first before moving forward.');
         // Scroll to the form
         document.getElementById('sib-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
         return;
       }
-      openModal();
+      openModal(savedEmail);
     }
 
     // Listen for Brevo form submission and open modal on success
@@ -1028,13 +1032,12 @@
               const emailInput = document.getElementById('EMAIL');
               const email = emailInput ? emailInput.value.trim() : '';
 
-              // Store email for modal
+              // Store email and submission status in sessionStorage
               if (email) {
                 sessionStorage.setItem('reservedEmail', email);
+                sessionStorage.setItem('brevoFormSubmitted', 'true');
+                formSubmitted = true;
               }
-
-              // Mark form as submitted
-              formSubmitted = true;
 
               // Hide the success message since we're showing the modal
               successMsg.style.display = 'none';
