@@ -581,12 +581,8 @@
               </div>
             </div>
 
-            <!-- Hidden Brevo submit button -->
-            <button type="submit" id="brevo-submit-btn" class="sib-form-block__button"
-              style="display: none;">Submit</button>
-
-            <!-- Visible custom button -->
-            <button type="button" class="btn btn-primary" onclick="handleReserveClick(event)">
+            <!-- Single submit button that Brevo will handle -->
+            <button type="submit" class="btn btn-primary sib-form-block__button">
               Reserve My Spot
               <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M4 10h12M10 4l6 6-6 6" />
@@ -911,56 +907,31 @@
       document.getElementById('emailErrorMsg').classList.remove('visible');
     }
 
-    // Remove the custom click handler - let Brevo handle the form submission
-    // We'll intercept after Brevo processes it
-
-    function handleReserveClick(event) {
-      event.preventDefault();
-
-      const emailInput = document.getElementById('EMAIL');
-      const val = emailInput.value.trim();
-
-      if (!isValidEmail(val)) {
-        const errorLabel = document.getElementById('emailErrorMsg');
-        errorLabel.textContent = 'Please enter a valid email address.';
-        errorLabel.style.display = 'block';
-        emailInput.focus();
-        return;
-      }
-
-      // Check if reCAPTCHA is verified
-      if (typeof grecaptcha !== 'undefined') {
-        const response = grecaptcha.getResponse();
-        if (response.length === 0) {
-          alert('Please complete the reCAPTCHA to proceed.');
-          return;
-        }
-      }
-
-      // Store email for modal
-      sessionStorage.setItem('reservedEmail', val);
-
-      // Trigger the hidden Brevo submit button
-      document.getElementById('brevo-submit-btn').click();
-
-      // Open modal immediately (Brevo will handle submission in background)
-      setTimeout(() => {
-        openModal(val);
-      }, 300);
-    }
-
-    // Listen for Brevo form submission success
+    // Listen for Brevo form submission and open modal on success
     document.addEventListener('DOMContentLoaded', function () {
       const form = document.getElementById('sib-form');
       if (form) {
-        // Watch for success message to appear
+        // Watch for success message to appear (indicates Brevo submission succeeded)
         const observer = new MutationObserver(function (mutations) {
           mutations.forEach(function (mutation) {
             const successMsg = document.getElementById('success-message');
-            if (successMsg && successMsg.style.display !== 'none') {
+            if (successMsg && successMsg.style.display !== 'none' && successMsg.style.display !== '') {
               console.log('Brevo form submitted successfully!');
+
+              // Get the email value
+              const emailInput = document.getElementById('EMAIL');
+              const email = emailInput ? emailInput.value.trim() : '';
+
+              // Store email for modal
+              if (email) {
+                sessionStorage.setItem('reservedEmail', email);
+              }
+
               // Hide the success message since we're showing the modal
               successMsg.style.display = 'none';
+
+              // Open the modal
+              openModal(email);
             }
           });
         });
@@ -995,11 +966,6 @@
     }
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
-
-    // Allow Enter key in email field to trigger submit
-    document.getElementById('EMAIL').addEventListener('keydown', e => {
-      if (e.key === 'Enter') handleReserveClick(e);
-    });
 
     // Brevo Captcha Callback
     function handleCaptchaResponse() {
