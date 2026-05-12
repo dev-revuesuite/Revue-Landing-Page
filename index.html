@@ -654,21 +654,27 @@
                       </div>
                     </div>
                   </div>
-                  <div style="margin-bottom: 16px;">
-                    <div class="sib-form-block" style="text-align: left">
-                      <button class="sib-form-block__button sib-form-block__button-with-loader"
-                        style="font-family: 'Poppins', sans-serif; font-size:16px; font-weight:600; text-align:center; color:#FFFFFF; background-color: var(--blue); border: none; border-radius: 8px; padding: 14px 24px; width: 100%; cursor: pointer; transition: all 0.2s ease;"
+                  <div style="margin-bottom: 8px;">
+                    <div class="sib-form-block" style="text-align: center;">
+                      <button class="sib-form-block__button sib-form-block__button-with-loader btn btn-primary"
+                        style="font-family: 'Poppins', sans-serif; font-size:16px; font-weight:600; text-align:center; color:#FFFFFF; background-color: var(--blue); border: none; border-radius: 8px; padding: 14px 24px; width: 100%; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px;"
                         form="sib-form" type="submit" onmouseover="this.style.backgroundColor='var(--blue-deep)'"
                         onmouseout="this.style.backgroundColor='var(--blue)'">
                         <svg class="icon clickable__icon progress-indicator__icon sib-hide-loader-icon"
-                          viewBox="0 0 512 512" style="display: none;">
+                          viewBox="0 0 512 512" style="display: none; width: 16px; height: 16px;">
                           <path
                             d="M460.116 373.846l-20.823-12.022c-5.541-3.199-7.54-10.159-4.663-15.874 30.137-59.886 28.343-131.652-5.386-189.946-33.641-58.394-94.896-95.833-161.827-99.676C261.028 55.961 256 50.751 256 44.352V20.309c0-6.904 5.808-12.337 12.703-11.982 83.556 4.306 160.163 50.864 202.11 123.677 42.063 72.696 44.079 162.316 6.031 236.832-3.14 6.148-10.75 8.461-16.728 5.01z" />
                         </svg>
-                        SUBSCRIBE
+                        Reserve My Spot
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"
+                          style="width: 16px; height: 16px;">
+                          <path d="M4 10h12M10 4l6 6-6 6" />
+                        </svg>
                       </button>
                     </div>
                   </div>
+                  <p class="btn-note" style="text-align: center; font-size: 12px; color: var(--text3); margin: 0;">Early
+                    access opens in curated onboarding batches.</p>
                   <input type="text" name="email_address_check" value="" class="input--hidden" style="display: none;">
                   <input type="hidden" name="locale" value="en">
                 </form>
@@ -676,17 +682,6 @@
             </div>
           </div>
           <!-- End Brevo Form -->
-
-          <!-- Reserve My Spot Button (kept as requested) -->
-          <div style="margin-top: 24px; text-align: center;">
-            <button id="reserve-spot-btn" class="btn btn-primary" type="button" onclick="handleReserveClick()">
-              Reserve My Spot
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M4 10h12M10 4l6 6-6 6" />
-              </svg>
-            </button>
-            <p class="btn-note">Early access opens in curated onboarding batches.</p>
-          </div>
 
         </div>
       </div>
