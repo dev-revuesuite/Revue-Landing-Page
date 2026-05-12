@@ -997,42 +997,23 @@
           if (emailInput && emailInput.value.trim()) {
             capturedEmail = emailInput.value.trim();
             console.log('Email captured:', capturedEmail);
+
+            // Wait for Brevo to process the form, then check if submission succeeded
+            setTimeout(function () {
+              const errorMsg = document.getElementById('error-message');
+              const hasError = errorMsg && (errorMsg.style.display !== 'none' && errorMsg.offsetHeight > 0);
+
+              if (!hasError && capturedEmail) {
+                console.log('Brevo form submitted successfully! Opening modal...');
+                openModal(capturedEmail);
+                capturedEmail = ''; // Clear after use
+              } else if (hasError) {
+                console.log('Form submission failed - validation error detected');
+                capturedEmail = ''; // Clear on error
+              }
+            }, 1500); // Wait 1.5 seconds for Brevo to process
           }
         });
-
-        // Watch for success message to appear (indicates Brevo submission succeeded)
-        const successMsg = document.getElementById('success-message');
-        if (successMsg) {
-          const observer = new MutationObserver(function (mutations) {
-            // Check if success message is now visible
-            const isVisible = successMsg.style.display !== 'none' && successMsg.style.display !== '';
-            const hasContent = successMsg.offsetHeight > 0;
-
-            if ((isVisible || hasContent) && capturedEmail) {
-              console.log('Brevo form submitted successfully! Opening modal...');
-
-              // Stop observing to prevent multiple triggers
-              observer.disconnect();
-
-              // Hide the success message since we're showing the modal
-              successMsg.style.display = 'none';
-
-              // Open the modal with captured email
-              openModal(capturedEmail);
-
-              // Clear captured email after use
-              capturedEmail = '';
-            }
-          });
-
-          // Observe both style changes and child list changes
-          observer.observe(successMsg, {
-            attributes: true,
-            attributeFilter: ['style'],
-            childList: true,
-            subtree: true
-          });
-        }
       }
     });
 
