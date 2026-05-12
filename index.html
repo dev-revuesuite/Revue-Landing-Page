@@ -975,7 +975,7 @@
 
   <script>
     let selectedPlan = 'studio';
-    let formSubmitted = sessionStorage.getItem('brevoFormSubmitted') === 'true'; // Check if form was already submitted
+    let capturedEmail = ''; // Store email captured on form submit
     const plans = {
       freelancer: { name: 'Freelancer Early Access', price: '₹299/month for 12 months' },
       studio: { name: 'Studio Early Access', price: '₹1,999/month for 12 months' }
@@ -987,65 +987,51 @@
       document.getElementById('tile-' + plan).classList.add('selected');
     }
 
-    /* ---- Email validation ---- */
-    function isValidEmail(val) {
-      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
-    }
-
-    function clearEmailError() {
-      document.getElementById('emailInputRow').classList.remove('error');
-      document.getElementById('emailErrorMsg').classList.remove('visible');
-    }
-
-    // Handle Reserve My Spot button click
-    function handleReserveClick() {
-      // Check sessionStorage for submission status
-      const isSubmitted = sessionStorage.getItem('brevoFormSubmitted') === 'true';
-      const savedEmail = sessionStorage.getItem('reservedEmail');
-
-      if (!isSubmitted || !savedEmail) {
-        alert('Please fill the form first before moving forward.');
-        // Scroll to the form
-        document.getElementById('sib-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
-        return;
-      }
-      openModal(savedEmail);
-    }
-
     // Listen for Brevo form submission and open modal on success
     document.addEventListener('DOMContentLoaded', function () {
       const form = document.getElementById('sib-form');
       if (form) {
+        // Capture email on form submit (before Brevo clears it)
+        form.addEventListener('submit', function (e) {
+          const emailInput = document.getElementById('EMAIL');
+          if (emailInput && emailInput.value.trim()) {
+            capturedEmail = emailInput.value.trim();
+            console.log('Email captured:', capturedEmail);
+          }
+        });
+
         // Watch for success message to appear (indicates Brevo submission succeeded)
-        const observer = new MutationObserver(function (mutations) {
-          mutations.forEach(function (mutation) {
-            const successMsg = document.getElementById('success-message');
-            if (successMsg && successMsg.style.display !== 'none' && successMsg.style.display !== '') {
-              console.log('Brevo form submitted successfully!');
+        const successMsg = document.getElementById('success-message');
+        if (successMsg) {
+          const observer = new MutationObserver(function (mutations) {
+            // Check if success message is now visible
+            const isVisible = successMsg.style.display !== 'none' && successMsg.style.display !== '';
+            const hasContent = successMsg.offsetHeight > 0;
 
-              // Get the email value
-              const emailInput = document.getElementById('EMAIL');
-              const email = emailInput ? emailInput.value.trim() : '';
+            if ((isVisible || hasContent) && capturedEmail) {
+              console.log('Brevo form submitted successfully! Opening modal...');
 
-              // Store email and submission status in sessionStorage
-              if (email) {
-                sessionStorage.setItem('reservedEmail', email);
-                sessionStorage.setItem('brevoFormSubmitted', 'true');
-                formSubmitted = true;
-              }
+              // Stop observing to prevent multiple triggers
+              observer.disconnect();
 
               // Hide the success message since we're showing the modal
               successMsg.style.display = 'none';
 
-              // Open the modal
-              openModal(email);
+              // Open the modal with captured email
+              openModal(capturedEmail);
+
+              // Clear captured email after use
+              capturedEmail = '';
             }
           });
-        });
 
-        const successMsg = document.getElementById('success-message');
-        if (successMsg) {
-          observer.observe(successMsg, { attributes: true, attributeFilter: ['style'] });
+          // Observe both style changes and child list changes
+          observer.observe(successMsg, {
+            attributes: true,
+            attributeFilter: ['style'],
+            childList: true,
+            subtree: true
+          });
         }
       }
     });
@@ -1053,9 +1039,7 @@
     function openModal(email) {
       document.getElementById('modal-plan-name').textContent = plans[selectedPlan].name;
       document.getElementById('modal-plan-price').textContent = plans[selectedPlan].price;
-
-      const emailVal = email || document.getElementById('EMAIL').value.trim();
-      document.getElementById('modal-email').textContent = emailVal;
+      document.getElementById('modal-email').textContent = email;
 
       const bd = document.getElementById('modalBackdrop');
       bd.classList.add('open');
