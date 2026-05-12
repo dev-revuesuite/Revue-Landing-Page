@@ -23,11 +23,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- SEO & Search Engine Tags -->
   <title>Revue</title>
-  <meta name="description" content="Revue helps creative agencies and design teams catch design errors before they reach clients. Powered by RevuerTech quality checks, it identifies issues like typos, spacing inconsistencies, and alignment errors while simplifying feedback and collaboration. Revue reduces manual review effort, speeds up approvals, and helps teams deliver polished creative work with greater confidence and consistency.">
-  
+  <meta name="description"
+    content="Revue helps creative agencies and design teams catch design errors before they reach clients. Powered by RevuerTech quality checks, it identifies issues like typos, spacing inconsistencies, and alignment errors while simplifying feedback and collaboration. Revue reduces manual review effort, speeds up approvals, and helps teams deliver polished creative work with greater confidence and consistency.">
+
   <!-- Open Graph / Social Media -->
   <meta property="og:title" content="Revue: QC Tool">
-  <meta property="og:description" content="Revue helps creative agencies and design teams catch design errors before they reach clients. Powered by RevuerTech quality checks, it identifies issues like typos, spacing inconsistencies, and alignment errors while simplifying feedback and collaboration. Revue reduces manual review effort, speeds up approvals, and helps teams deliver polished creative work with greater confidence and consistency.">
+  <meta property="og:description"
+    content="Revue helps creative agencies and design teams catch design errors before they reach clients. Powered by RevuerTech quality checks, it identifies issues like typos, spacing inconsistencies, and alignment errors while simplifying feedback and collaboration. Revue reduces manual review effort, speeds up approvals, and helps teams deliver polished creative work with greater confidence and consistency.">
   <meta property="og:image" content="https://revuesuite.com/assets/Brand-assets.webp">
   <meta property="og:url" content="https://revuesuite.com/">
 
@@ -52,7 +54,7 @@
       <div class="nav-links" id="navLinks">
         <a href="#product">Product</a><a href="#how">How It Works</a><a href="#pricing">Pricing</a><a
           href="#about">About</a>
-        <a href="join-beta.html" class="btn-p" target="_blank" rel="noopener"><span>Join Beta</span></a>
+        <a href="join-beta.html" class="btn-p" target="_blank" rel="noopener"><span>Join the Waitlist</span></a>
       </div>
       <div class="theme-toggle" id="themeToggle" title="Toggle theme">
         <div class="knob"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -77,7 +79,7 @@
             Waitlist</span></a><a href="#pricing" class="btn-s">Reserve Early Access</a></div>
       <div class="hero-ss">
         <div>
-          <div class="hero-sub">Early access spots are limited.
+          <div class="hero-note">Early access spots are limited.
             Selected users get priority onboarding, founder pricing eligibility, and access before public launch.</div>
         </div>
         <div class="hero-ss-in"><img src="./assets/Full-design-review.webp" alt="Revue QC Tool" loading="lazy"></div>
@@ -517,13 +519,52 @@
             <div class="spots-note">Limited onboarding batches to ensure focused product support.</div>
           </div>
 
-          <button class="btn btn-primary" onclick="openModal()">
-            Reserve My Spot
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 10h12M10 4l6 6-6 6" />
-            </svg>
-          </button>
-          <p class="btn-note">Early access opens in curated onboarding batches.</p>
+          <form id="sib-form" method="POST"
+            action="https://3770dcb0.sibforms.com/serve/MUIFAB-063KtuZIrdg2KjwVmGHY1V6RMAmyHeWW-IZ8mx5QmxlnGCSZwepoLg_xmDF7kewQlehR0BtKph9ib9wlaXQCKI0rS8RczuPWUpBApLIx9HjaQ4IbJfo9MCOVqaGi9XJv9RvKjttuYC0QiXI35nGSR-42ZbUaIhg8moBZhchox3KgA82yoonSKEuDZ-GgOFgYPNI-A7EYvJQ=="
+            data-type="subscription">
+            <div id="error-message" class="sib-form-message-panel"
+              style="font-family:Helvetica, sans-serif; font-size:14px; text-align:left; color:#661d1d; background-color:#ffeded; border-color:#ff4949; border-radius:8px; padding: 12px; margin-bottom: 16px; display: none;">
+              Your subscription could not be saved. Please try again.
+            </div>
+            <div id="success-message" class="sib-form-message-panel"
+              style="font-family:Helvetica, sans-serif; font-size:14px; text-align:left; color:#085229; background-color:#e7faf0; border-color:#13ce66; border-radius:8px; padding: 12px; margin-bottom: 16px; display: none;">
+              Your subscription has been successful. Redirecting...
+            </div>
+
+            <div class="email-capture-wrap">
+              <label class="email-capture-label" for="EMAIL">I'm Interested — Reserve with your email</label>
+              <div class="email-input-row" id="emailInputRow">
+                <span class="email-icon">
+                  <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="2" y="5" width="16" height="12" rx="2" />
+                    <path d="M2 7l8 5 8-5" />
+                  </svg>
+                </span>
+                <input class="email-field" id="EMAIL" type="email" name="EMAIL" placeholder="you@studio.com"
+                  autocomplete="email" data-required="true" required oninput="clearEmailError()" />
+              </div>
+              <div class="email-error-msg" id="emailErrorMsg">Please enter a valid email address.</div>
+            </div>
+
+            <!-- hidden inputs required by Brevo -->
+            <input type="text" name="email_address_check" value="" class="input--hidden" style="display:none;">
+            <input type="hidden" name="locale" value="en">
+
+            <!-- reCAPTCHA block -->
+            <div style="margin-bottom: 16px; display: flex; justify-content: flex-start;">
+              <div class="g-recaptcha sib-visible-recaptcha" id="sib-captcha"
+                data-sitekey="6LeM8uUsAAAAAO6hhEaR49fkjAkxV87jgpJYHReL" data-callback="handleCaptchaResponse"
+                style="direction:ltr"></div>
+            </div>
+
+            <button type="button" class="btn btn-primary" onclick="handleReserveClick()">
+              Reserve My Spot
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 10h12M10 4l6 6-6 6" />
+              </svg>
+            </button>
+            <p class="btn-note">Early access opens in curated onboarding batches.</p>
+          </form>
         </div>
       </div>
     </div>
@@ -680,8 +721,8 @@
     <div class="container">
       <div class="fcta reveal" id="cta">
         <h2>Never let small mistakes<br>ruin great work again</h2>
-        <p>Join design agencies who trust Revue to maintain quality without slowing down.</p>
-        <div class="fcta-a"><a href="join-beta.html" class="btn-p" target="_blank" style="padding:13px 28px;">Join
+        <div class="fcta-a" style="margin-top: 32px;"><a href="join-beta.html" class="btn-p" target="_blank"
+            style="padding:13px 28px;">Join
             Beta &rarr;</a><a href="#" class="btn-g"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2">
               <polygon points="5 3 19 12 5 21 5 3" />
@@ -761,6 +802,10 @@
               <span class="m-sr-key">Pricing</span>
               <span class="m-sr-val price" id="modal-plan-price">₹1,999/month for 12 months</span>
             </div>
+            <div class="m-summary-row">
+              <span class="m-sr-key">Email</span>
+              <span class="m-sr-val email-val" id="modal-email">—</span>
+            </div>
             <div class="m-includes-label">Includes</div>
             <ul class="m-includes-list">
               <li><span class="m-dot-bullet"></span> Guaranteed early onboarding</li>
@@ -790,7 +835,7 @@
 
         <!-- S5 CTA -->
         <div class="m-section-5">
-          <button class="m-cta-btn">
+          <button type="submit" form="sib-form" class="m-cta-btn" id="m-cta-btn" onclick="closeModal()">
             Continue to Secure My Spot
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 10h12M10 4l6 6-6 6" />
@@ -823,9 +868,52 @@
       document.getElementById('tile-' + plan).classList.add('selected');
     }
 
-    function openModal() {
+    /* ---- Email validation ---- */
+    function isValidEmail(val) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val.trim());
+    }
+
+    function clearEmailError() {
+      document.getElementById('emailInputRow').classList.remove('error');
+      document.getElementById('emailErrorMsg').classList.remove('visible');
+    }
+
+    function handleReserveClick() {
+      const emailInput = document.getElementById('EMAIL');
+      const val = emailInput.value.trim();
+
+      if (!isValidEmail(val)) {
+        const row = document.getElementById('emailInputRow');
+        const msg = document.getElementById('emailErrorMsg');
+        row.classList.remove('error');
+        // force reflow so shake animation replays
+        void row.offsetWidth;
+        row.classList.add('error');
+        msg.classList.add('visible');
+        emailInput.focus();
+        return;
+      }
+
+      // Check if reCAPTCHA is verified
+      if (typeof grecaptcha !== 'undefined') {
+        const response = grecaptcha.getResponse();
+        if (response.length === 0) {
+          alert('Please complete the reCAPTCHA to proceed.');
+          return;
+        }
+      }
+
+      // Valid — open modal with captured data
+      openModal(val);
+    }
+
+    function openModal(email) {
       document.getElementById('modal-plan-name').textContent = plans[selectedPlan].name;
       document.getElementById('modal-plan-price').textContent = plans[selectedPlan].price;
+
+      const emailVal = email || document.getElementById('EMAIL').value.trim();
+      document.getElementById('modal-email').textContent = emailVal;
+
       const bd = document.getElementById('modalBackdrop');
       bd.classList.add('open');
       document.body.style.overflow = 'hidden';
@@ -842,7 +930,41 @@
     }
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // Allow Enter key in email field to trigger submit
+    document.getElementById('EMAIL').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleReserveClick();
+    });
+
+    // Brevo Captcha Callback
+    function handleCaptchaResponse() {
+      var event = new Event('captchaChange');
+      document.getElementById('sib-captcha').dispatchEvent(event);
+    }
   </script>
+
+  <!-- Brevo & reCAPTCHA Scripts -->
+  <script>
+    window.REQUIRED_CODE_ERROR_MESSAGE = 'Please choose a country code';
+    window.LOCALE = 'en';
+    window.EMAIL_INVALID_MESSAGE = window.SMS_INVALID_MESSAGE = "The information provided is invalid. Please review the field format and try again.";
+    window.REQUIRED_ERROR_MESSAGE = "This field cannot be left blank.";
+    window.GENERIC_INVALID_MESSAGE = "The information provided is invalid. Please review the field format and try again.";
+    window.INVALID_NUMBER = "The information provided is invalid. Please review the field format and try again.";
+    window.INVALID_DATE = "Please enter a valid date";
+    window.REQUIRED_MULTISELECT_MESSAGE = 'Please select at least 1 option';
+    window.translation = {
+      common: {
+        selectedList: '{quantity} list selected',
+        selectedLists: '{quantity} lists selected',
+        selectedOption: '{quantity} selected',
+        selectedOptions: '{quantity} selected',
+      }
+    };
+    var AUTOHIDE = Boolean(0);
+  </script>
+  <script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js?hl=en"></script>
 </body>
 
 </html>
