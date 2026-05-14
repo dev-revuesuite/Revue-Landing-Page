@@ -1,5 +1,5 @@
 // Razorpay Key ID (public key - safe to use in frontend)
-const RAZORPAY_KEY_ID = 'rzp_test_SoqMlCOrbDbjLs';
+const RAZORPAY_KEY_ID = 'rzp_live_SpA9fpmtYPHhGA';
 
 // Load Razorpay script
 function loadRazorpayScript() {
