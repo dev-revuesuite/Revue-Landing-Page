@@ -1,7 +1,6 @@
 const razorpayService = require('../../backend/services/razorpayService');
 const { getPlanDetails, generateReceiptId } = require('../../backend/utils/helpers');
 const { CURRENCY, ERROR_CODES } = require('../../backend/utils/constants');
-const { validateOrderCreation } = require('../../backend/middleware/validation');
 
 module.exports = async (req, res) => {
     // Enable CORS
@@ -27,9 +26,17 @@ module.exports = async (req, res) => {
     try {
         const { plan, email } = req.body;
 
-        // Validate input
-        const validation = validateOrderCreation(req, res, () => { });
-        if (validation === false) return; // Validation middleware already sent response
+        // Validate plan and email
+        if (!plan || !email) {
+            return res.status(400).json({
+                success: false,
+                error: {
+                    message: 'Plan and email are required',
+                    code: ERROR_CODES.VALIDATION_ERROR,
+                    statusCode: 400
+                }
+            });
+        }
 
         // Get plan details
         const planDetails = getPlanDetails(plan);
