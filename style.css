@@ -161,13 +161,13 @@ html {
 }
 
 [data-theme="dark"] .btn-s {
-  color: var(--text2);
+  color: #fff;
   border-color: var(--card-border)
 }
 
 [data-theme="dark"] .btn-s:hover {
   border-color: var(--blue);
-  color: var(--blue)
+  color: #fff
 }
 
 [data-theme="dark"] .fi {
@@ -412,7 +412,7 @@ ul {
   gap: 8px;
   padding: 11px 26px;
   background: transparent;
-  color: var(--text1);
+  color: #fff;
   border: 1.5px solid var(--card-border);
   border-radius: 100px;
   font-size: 14px;
@@ -422,7 +422,7 @@ ul {
 
 .btn-s:hover {
   border-color: var(--blue);
-  color: var(--blue)
+  color: #fff
 }
 
 .mob-t {
@@ -595,10 +595,10 @@ ul {
 }
 
 .hero-note {
-  font-size: clamp(14px, 1.4vw, 15.5px);
-  line-height: 1.55;
+  font-size: clamp(13px, 1.3vw, 14px);
+  line-height: 1.6;
   color: #9095AD;
-  max-width: 500px;
+  max-width: 700px;
   margin: 0 auto 20px;
   font-weight: 500;
 }
@@ -654,7 +654,8 @@ ul {
 }
 
 .hero .btn-s:hover {
-  border-color: rgba(255, 255, 255, .5)
+  border-color: rgba(255, 255, 255, .5);
+  color: #fff
 }
 
 /* COMMON */
@@ -1014,64 +1015,220 @@ ul {
   margin-top: 8px
 }
 
-.tf {
+/* ── NEW PROBLEM SECTION COMPONENT ── */
+.problem-wrap {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px
+  gap: 0;
 }
 
-.tg {
+/* ── TOOL ROW ── */
+.tool-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
-  width: 100%
+  width: 100%;
 }
 
-@media(max-width:600px) {
-  .tg {
-    grid-template-columns: repeat(2, 1fr)
+@media (max-width: 520px) {
+  .tool-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-.tc2 {
-  padding: 13px 14px;
+/* ── TOOL BOX ── */
+.tool-box {
   background: var(--bg2);
   border: 1px solid var(--card-border);
-  border-radius: var(--radius-sm);
-  text-align: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text2)
+  border-radius: 12px;
+  padding: 14px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+  animation: rise 0.5s ease both;
 }
 
-.fa2 {
+.tool-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 24px rgba(59, 79, 228, 0.12), 0 0 0 1px rgba(59, 79, 228, 0.15);
+}
+
+[data-theme="dark"] .tool-box:hover {
+  box-shadow: 0 6px 24px rgba(59, 79, 228, 0.25), 0 0 0 1px rgba(59, 79, 228, 0.3);
+}
+
+/* stagger */
+.tool-box:nth-child(1) {
+  animation-delay: 0.03s;
+}
+
+.tool-box:nth-child(2) {
+  animation-delay: 0.07s;
+}
+
+.tool-box:nth-child(3) {
+  animation-delay: 0.11s;
+}
+
+.tool-box:nth-child(4) {
+  animation-delay: 0.15s;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.row-2 .tool-box:nth-child(1) {
+  animation-delay: 0.19s;
+}
+
+.row-2 .tool-box:nth-child(2) {
+  animation-delay: 0.23s;
+}
+
+.row-2 .tool-box:nth-child(3) {
+  animation-delay: 0.27s;
+}
+
+.row-2 .tool-box:nth-child(4) {
+  animation-delay: 0.31s;
+}
+
+.tool-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text3);
-  font-weight: 500;
-  padding: 6px 0
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.fa2 svg {
-  opacity: .5
+.tool-logo img,
+.tool-logo svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
-.rc {
-  padding: 16px 28px;
-  background: var(--blue);
-  color: #fff;
-  border-radius: var(--radius-md);
+.tool-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text1);
   text-align: center;
-  width: 100%
+  line-height: 1.2;
+  letter-spacing: -0.01em;
 }
 
-.rc strong {
-  font-family: var(--font-d);
-  font-size: 14px;
-  font-weight: 700
+/* ── SPACER between rows ── */
+.row-gap {
+  height: 10px;
+}
+
+/* ── ARROW + COPY STRIP ── */
+.copy-strip {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 0 18px;
+  animation: rise 0.5s 0.38s ease both;
+}
+
+.copy-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.arrow-icon {
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.arrow-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.copy-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--blue);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+[data-theme="dark"] .copy-text {
+  color: #6EA4FF;
+}
+
+/* ── REVUE CTA BOX ── */
+.revue-box {
+  width: 100%;
+  background: var(--blue);
+  border-radius: 16px;
+  padding: 26px 28px 24px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(59, 79, 228, 0.35);
+  position: relative;
+  overflow: hidden;
+  animation: rise 0.5s 0.44s ease both;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.revue-box:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 44px rgba(59, 79, 228, 0.48);
+}
+
+.revue-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 75% 60% at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.revue-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(212, 255, 0, 0.65);
+  margin-bottom: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.revue-headline {
+  font-size: clamp(17px, 3.2vw, 22px);
+  font-weight: 700;
+  color: #D4FF00;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  position: relative;
+  z-index: 1;
 }
 
 @media(max-width:900px) {
