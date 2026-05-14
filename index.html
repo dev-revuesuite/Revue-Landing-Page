@@ -689,7 +689,8 @@
                       </div>
                     </div>
                   </div>
-                  <div style="margin-bottom: 16px;">
+                  <!-- CAPTCHA DISABLED FOR LOCAL TESTING -->
+                  <!-- <div style="margin-bottom: 16px;">
                     <div class="sib-captcha sib-form-block">
                       <div class="form__entry entry_block">
                         <div class="form__label-row">
@@ -708,7 +709,7 @@
                         </label>
                       </div>
                     </div>
-                  </div>
+                  </div> -->
                   <div style="margin-bottom: 8px;">
                     <div class="sib-form-block" style="text-align: center;">
                       <button class="sib-form-block__button sib-form-block__button-with-loader btn btn-primary"
@@ -953,7 +954,7 @@
 
         <!-- S5 CTA -->
         <div class="m-section-5">
-          <button type="button" class="m-cta-btn" id="m-cta-btn" onclick="closeModal()">
+          <button type="button" class="m-cta-btn" id="m-cta-btn">
             Continue to Secure My Spot
             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M4 10h12M10 4l6 6-6 6" />
@@ -1006,7 +1007,7 @@
               if (!hasError && capturedEmail) {
                 console.log('Brevo form submitted successfully! Opening modal...');
                 openModal(capturedEmail);
-                capturedEmail = ''; // Clear after use
+                // Don't clear capturedEmail here - we need it for payment
               } else if (hasError) {
                 console.log('Form submission failed - validation error detected');
                 capturedEmail = ''; // Clear on error
@@ -1014,6 +1015,15 @@
             }, 1500); // Wait 1.5 seconds for Brevo to process
           }
         });
+      }
+
+      // Update payment button handler
+      const paymentButton = document.getElementById('m-cta-btn');
+      if (paymentButton) {
+        paymentButton.onclick = function () {
+          console.log('Payment button clicked', { plan: selectedPlan, email: capturedEmail });
+          initializePayment(selectedPlan, capturedEmail);
+        };
       }
     });
 
@@ -1067,7 +1077,110 @@
     var AUTOHIDE = Boolean(0);
   </script>
   <script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
-  <script src="https://www.google.com/recaptcha/api.js?hl=en"></script>
+  <!-- RECAPTCHA DISABLED FOR LOCAL TESTING -->
+  <!-- <script src="https://www.google.com/recaptcha/api.js?hl=en"></script> -->
+
+  <!-- Payment Integration Scripts -->
+  <script src="payment-api-client.js"></script>
+  <script src="razorpay-checkout.js"></script>
+  <script src="payment-ui-manager.js"></script>
+  <script src="payment-manager.js"></script>
+
+  <!-- Payment UI Containers -->
+  <div id="payment-loading-overlay"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center; flex-direction:column;">
+    <div style="background:white; padding:40px; border-radius:12px; text-align:center; max-width:400px;">
+      <div class="spinner"
+        style="border:4px solid #f3f3f3; border-top:4px solid #3399cc; border-radius:50%; width:50px; height:50px; animation:spin 1s linear infinite; margin:0 auto 20px;">
+      </div>
+      <p id="payment-loading-message" style="font-size:16px; color:#333; margin:0;">Processing...</p>
+    </div>
+  </div>
+
+  <div id="payment-success-container"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center;">
+    <div id="payment-success-message"
+      style="background:white; padding:40px; border-radius:12px; text-align:center; max-width:500px;"></div>
+  </div>
+
+  <div id="payment-error-container"
+    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center;">
+    <div id="payment-error-message"
+      style="background:white; padding:40px; border-radius:12px; text-align:center; max-width:500px;"></div>
+  </div>
+
+  <style>
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: #4CAF50;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      margin: 0 auto 20px;
+    }
+
+    .error-icon {
+      width: 80px;
+      height: 80px;
+      background: #f44336;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      margin: 0 auto 20px;
+    }
+
+    .payment-details {
+      background: #f5f5f5;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .next-steps {
+      color: #666;
+      font-size: 14px;
+      margin-top: 15px;
+    }
+
+    .btn-retry {
+      background: #3399cc;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 20px 0;
+    }
+
+    .btn-retry:hover {
+      background: #2980b9;
+    }
+
+    .support-text {
+      color: #666;
+      font-size: 12px;
+      margin-top: 15px;
+    }
+  </style>
 </body>
 
 </html>
