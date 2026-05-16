@@ -2151,7 +2151,9 @@ ul {
   padding: 28px 0;
   font-size: 12px;
   color: #6B7094;
-  font-weight: 500
+  font-weight: 500;
+  flex-wrap: wrap;
+  gap: 16px;
 }
 
 .fbot-l {
@@ -2171,6 +2173,38 @@ ul {
 .flogo img {
   height: 18px;
   filter: brightness(0) invert(1)
+}
+
+/* Social Links in Footer */
+.social-links {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.social-links a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9CA3AF;
+  transition: all 0.2s ease;
+}
+
+.social-links a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.social-links svg {
+  width: 18px;
+  height: 18px;
 }
 
 @media(max-width:600px) {
@@ -3436,4 +3470,103 @@ ul {
   color: var(--blue);
   font-weight: 600;
   word-break: break-all;
+}
+
+/* Payment Success/Failure Messages */
+.payment-success-actions,
+.payment-error-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.btn-back-site,
+.btn-retry,
+.btn-back-website {
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+}
+
+.btn-back-site {
+  background: var(--blue);
+  color: white;
+}
+
+.btn-back-site:hover {
+  background: var(--blue-deep);
+  transform: translateY(-1px);
+}
+
+.btn-retry {
+  background: var(--blue);
+  color: white;
+}
+
+.btn-retry:hover {
+  background: var(--blue-deep);
+  transform: translateY(-1px);
+}
+
+.btn-back-website {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--card-border);
+}
+
+.btn-back-website:hover {
+  background: rgba(0, 0, 0, 0.02);
+  border-color: var(--text3);
+}
+
+/* Social Follow Section in Success Message */
+.social-follow {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.follow-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 14px;
+}
+
+.social-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.social-icons a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(59, 79, 228, 0.08);
+  border: 1px solid rgba(59, 79, 228, 0.15);
+  color: var(--blue);
+  transition: all 0.2s ease;
+}
+
+.social-icons a:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: white;
+  transform: translateY(-2px);
+}
+
+.social-icons svg {
+  width: 20px;
+  height: 20px;
 }
