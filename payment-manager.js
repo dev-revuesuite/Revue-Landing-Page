@@ -208,6 +208,9 @@ async function handlePaymentSuccess(response) {
 }
 
 function handlePaymentFailure(error) {
+    if (typeof closeCheckout === 'function') {
+        closeCheckout();
+    }
     const errorMessage = error.description || error.reason || 'Payment failed. Please try again.';
     showError(errorMessage, true);
     paymentState.isProcessing = false;
@@ -223,6 +226,9 @@ function handleModalClose() {
 
 function retryPayment() {
     hideError();
+    if (typeof closeCheckout === 'function') {
+        closeCheckout();
+    }
     if (paymentState.selectedPlan && paymentState.userEmail) {
         handleContinueToPayment(paymentState.selectedPlan);
     }

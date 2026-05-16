@@ -27,6 +27,20 @@ function getCheckoutImageUrl() {
     return `${window.location.origin}/assets/logo-dark.webp`;
 }
 
+let activeCheckout = null;
+
+function closeCheckout() {
+    if (!activeCheckout) {
+        return;
+    }
+    try {
+        activeCheckout.close();
+    } catch (e) {
+        // Checkout may already be closed
+    }
+    activeCheckout = null;
+}
+
 // Open Razorpay checkout
 function openCheckout(orderDetails, userEmail, planName, onSuccess, onFailure, onDismiss) {
     const options = {
@@ -44,20 +58,26 @@ function openCheckout(orderDetails, userEmail, planName, onSuccess, onFailure, o
             color: '#3399cc'
         },
         handler: function (response) {
+            activeCheckout = null;
             onSuccess(response);
         },
         modal: {
+            escape: true,
+            backdropclose: true,
+            confirm_close: false,
             ondismiss: function () {
+                activeCheckout = null;
                 onDismiss();
             }
         }
     };
 
-    const rzp = new Razorpay(options);
+    activeCheckout = new Razorpay(options);
 
-    rzp.on('payment.failed', function (response) {
+    activeCheckout.on('payment.failed', function (response) {
+        closeCheckout();
         onFailure(response.error);
     });
 
-    rzp.open();
+    activeCheckout.open();
 }

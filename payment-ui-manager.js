@@ -59,16 +59,23 @@ function showSuccess(paymentDetails) {
 // Show error message
 function showError(errorMessage, allowRetry) {
     hideLoading();
+    if (typeof closeCheckout === 'function') {
+        closeCheckout();
+    }
 
     const errorContainer = document.getElementById('payment-error-container');
     const errorMessageEl = document.getElementById('payment-error-message');
 
     if (errorMessageEl) {
         errorMessageEl.innerHTML = `
+      <button type="button" class="payment-overlay-close" onclick="dismissPaymentError()" aria-label="Close">×</button>
       <div class="error-icon">✕</div>
       <h2>Payment Failed</h2>
       <p>${errorMessage}</p>
-      ${allowRetry ? '<button class="btn-retry" onclick="retryPayment()">Retry Payment</button>' : ''}
+      <div class="payment-error-actions">
+        ${allowRetry ? '<button type="button" class="btn-retry" onclick="retryPayment()">Retry Payment</button>' : ''}
+        <button type="button" class="btn-continue-site" onclick="dismissPaymentError()">Continue to Site</button>
+      </div>
       <p class="support-text">Need help? Contact support at support@revuesuite.com</p>
     `;
     }
@@ -83,6 +90,20 @@ function hideError() {
     const errorContainer = document.getElementById('payment-error-container');
     if (errorContainer) {
         errorContainer.style.display = 'none';
+    }
+}
+
+function dismissPaymentError() {
+    hideError();
+    if (typeof closeCheckout === 'function') {
+        closeCheckout();
+    }
+    if (typeof paymentState !== 'undefined') {
+        paymentState.isProcessing = false;
+    }
+    enablePaymentButton();
+    if (typeof closeModal === 'function') {
+        closeModal();
     }
 }
 
