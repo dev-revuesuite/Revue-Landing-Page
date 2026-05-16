@@ -1,5 +1,5 @@
 // Razorpay Key ID (public key - safe to use in frontend)
-const RAZORPAY_KEY_ID = 'rzp_live_SpA9fpmtYPHhGA';
+const RAZORPAY_KEY_ID = 'rzp_test_Spi7QRTCZ2HgG9';
 
 // Load Razorpay script
 function loadRazorpayScript() {
@@ -18,6 +18,15 @@ function loadRazorpayScript() {
     });
 }
 
+// Razorpay checkout runs on https://api.razorpay.com — image must be absolute HTTPS (not localhost).
+function getCheckoutImageUrl() {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+        return 'https://revuesuite.com/assets/logo-dark.webp';
+    }
+    return `${window.location.origin}/assets/logo-dark.webp`;
+}
+
 // Open Razorpay checkout
 function openCheckout(orderDetails, userEmail, planName, onSuccess, onFailure, onDismiss) {
     const options = {
@@ -26,7 +35,7 @@ function openCheckout(orderDetails, userEmail, planName, onSuccess, onFailure, o
         currency: orderDetails.currency,
         name: 'Revue',
         description: `${planName} - Early Access`,
-        image: '/assets/logo-dark.webp',
+        image: getCheckoutImageUrl(),
         order_id: orderDetails.orderId,
         prefill: {
             email: userEmail

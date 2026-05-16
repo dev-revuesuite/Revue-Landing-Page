@@ -5,7 +5,7 @@ const { CURRENCY, ERROR_CODES } = require('../utils/constants');
 // Create order
 async function createOrder(req, res, next) {
     try {
-        const { plan, email } = req.body;
+        const { plan, email, name, gstin } = req.body;
 
         // Get plan details
         const planDetails = getPlanDetails(plan);
@@ -32,7 +32,9 @@ async function createOrder(req, res, next) {
                 email: email,
                 plan: plan,
                 planName: planDetails.name,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                ...(name ? { name: String(name).trim() } : {}),
+                ...(gstin ? { gstin: String(gstin).trim() } : {})
             }
         };
 

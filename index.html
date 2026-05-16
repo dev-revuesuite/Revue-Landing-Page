@@ -824,26 +824,6 @@
                       </div>
                     </div>
                   </div>
-                  <div style="margin-bottom: 16px;">
-                    <div class="sib-captcha sib-form-block">
-                      <div class="form__entry entry_block">
-                        <div class="form__label-row">
-                          <script>
-                            function handleCaptchaResponse() {
-                              var event = new Event('captchaChange');
-                              document.getElementById('sib-captcha').dispatchEvent(event);
-                            }
-                          </script>
-                          <div class="g-recaptcha sib-visible-recaptcha" id="sib-captcha"
-                            data-sitekey="6LeM8uUsAAAAAO6hhEaR49fkjAkxV87jgpJYHReL"
-                            data-callback="handleCaptchaResponse" style="direction:ltr"></div>
-                        </div>
-                        <label class="entry__error entry__error--primary"
-                          style="font-family: 'Poppins', sans-serif; font-size:12px; text-align:left; color:#661d1d; background-color:#ffeded; border:1px solid #ff4949; border-radius:6px; padding: 8px; margin-top: 8px; display: none;">
-                        </label>
-                      </div>
-                    </div>
-                  </div>
                   <div style="margin-bottom: 8px;">
                     <div class="sib-form-block" style="text-align: center;">
                       <button class="sib-form-block__button sib-form-block__button-with-loader btn btn-primary"
@@ -1083,6 +1063,38 @@
 
         <div class="m-divider"></div>
 
+        <!-- Lead details (before payment) -->
+        <div class="m-section-lead">
+          <div class="m-lead-heading">Your details</div>
+          <p class="m-lead-sub">We use this for your early access records and invoicing.</p>
+          <div id="lead-form-error" class="lead-form-error" role="alert"></div>
+
+          <div class="m-email-input-wrapper">
+            <label class="m-email-label" for="lead-name">Full name</label>
+            <input type="text" id="lead-name" class="m-email-input" placeholder="Your full name" autocomplete="name"
+              required>
+          </div>
+
+          <div class="m-email-input-wrapper">
+            <label class="m-email-label" for="lead-email">Email</label>
+            <input type="email" id="lead-email" class="m-email-input" placeholder="you@company.com"
+              autocomplete="email" required>
+          </div>
+
+          <label class="m-gst-check">
+            <input type="checkbox" id="has-gst">
+            <span>I have a GST number (optional)</span>
+          </label>
+
+          <div class="m-email-input-wrapper lead-gst-field is-hidden" id="lead-gst-field">
+            <label class="m-email-label" for="lead-gstin">GSTIN</label>
+            <input type="text" id="lead-gstin" class="m-email-input" placeholder="29AAAAA0000A1Z5" maxlength="15"
+              autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+
+        <div class="m-divider"></div>
+
         <!-- S5 CTA -->
         <div class="m-section-5">
           <button type="button" class="m-cta-btn" id="m-cta-btn">
@@ -1148,12 +1160,27 @@
         });
       }
 
-      // Update payment button handler
+      const hasGstCheckbox = document.getElementById('has-gst');
+      const leadGstField = document.getElementById('lead-gst-field');
+      const leadGstinInput = document.getElementById('lead-gstin');
+
+      if (hasGstCheckbox && leadGstField) {
+        hasGstCheckbox.addEventListener('change', function () {
+          if (hasGstCheckbox.checked) {
+            leadGstField.classList.remove('is-hidden');
+          } else {
+            leadGstField.classList.add('is-hidden');
+            if (leadGstinInput) {
+              leadGstinInput.value = '';
+            }
+          }
+        });
+      }
+
       const paymentButton = document.getElementById('m-cta-btn');
       if (paymentButton) {
         paymentButton.onclick = function () {
-          console.log('Payment button clicked', { plan: selectedPlan, email: capturedEmail });
-          initializePayment(selectedPlan, capturedEmail);
+          handleContinueToPayment(selectedPlan);
         };
       }
     });
@@ -1162,6 +1189,36 @@
       document.getElementById('modal-plan-name').textContent = plans[selectedPlan].name;
       document.getElementById('modal-plan-price').textContent = plans[selectedPlan].price;
       document.getElementById('modal-email').textContent = email;
+
+      const leadEmail = document.getElementById('lead-email');
+      if (leadEmail) {
+        leadEmail.value = email || '';
+      }
+
+      const leadName = document.getElementById('lead-name');
+      if (leadName) {
+        leadName.value = '';
+      }
+
+      const hasGst = document.getElementById('has-gst');
+      const leadGstField = document.getElementById('lead-gst-field');
+      const leadGstin = document.getElementById('lead-gstin');
+      if (hasGst) {
+        hasGst.checked = false;
+      }
+      if (leadGstField) {
+        leadGstField.classList.add('is-hidden');
+      }
+      if (leadGstin) {
+        leadGstin.value = '';
+      }
+
+      if (typeof resetLeadPaymentState === 'function') {
+        resetLeadPaymentState();
+      }
+      if (typeof hideLeadFormError === 'function') {
+        hideLeadFormError();
+      }
 
       const bd = document.getElementById('modalBackdrop');
       bd.classList.add('open');
@@ -1180,14 +1237,9 @@
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
-    // Brevo Captcha Callback
-    function handleCaptchaResponse() {
-      var event = new Event('captchaChange');
-      document.getElementById('sib-captcha').dispatchEvent(event);
-    }
   </script>
 
-  <!-- Brevo & reCAPTCHA Scripts -->
+  <!-- Brevo Scripts -->
   <script>
     window.REQUIRED_CODE_ERROR_MESSAGE = 'Please choose a country code';
     window.LOCALE = 'en';
@@ -1208,7 +1260,6 @@
     var AUTOHIDE = Boolean(0);
   </script>
   <script defer src="https://sibforms.com/forms/end-form/build/main.js"></script>
-  <script src="https://www.google.com/recaptcha/api.js?hl=en"></script>
 
   <!-- Payment Integration Scripts -->
   <script src="payment-api-client.js"></script>

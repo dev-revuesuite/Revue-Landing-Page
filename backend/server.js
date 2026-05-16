@@ -1,4 +1,5 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -6,8 +7,11 @@ const rateLimit = require('express-rate-limit');
 
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const gstRoutes = require('./routes/gstRoutes');
+const leadRoutes = require('./routes/leadRoutes');
 const { errorHandler } = require('./middleware/errorHandler');
 const { requestLogger } = require('./middleware/logger');
+const { corsOriginDelegate, getAllowedOrigins } = require('./utils/corsConfig');
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -31,9 +35,9 @@ const app = express();
 // Security middleware
 app.use(helmet());
 
-// CORS configuration
+// CORS: FRONTEND_URL (comma-separated) + any localhost/127.0.0.1 port in development
 app.use(cors({
-    origin: process.env.FRONTEND_URL,
+    origin: corsOriginDelegate,
     methods: ['GET', 'POST'],
     credentials: true
 }));
@@ -61,6 +65,38 @@ const orderLimiter = rateLimit({
     legacyHeaders: false
 });
 
+// Rate limiter for GST lookup (10 requests per 15 minutes)
+const gstLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+        success: false,
+        error: {
+            message: 'Too many GST verification attempts. Please try again later.',
+            code: 'RATE_LIMIT_EXCEEDED',
+            statusCode: 429
+        }
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+// Rate limiter for lead save/update (10 requests per 15 minutes)
+const leadsLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+        success: false,
+        error: {
+            message: 'Too many requests. Please try again later.',
+            code: 'RATE_LIMIT_EXCEEDED',
+            statusCode: 429
+        }
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -69,6 +105,8 @@ app.get('/health', (req, res) => {
 // API routes
 app.use('/api/orders', orderLimiter, orderRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/gst', gstLimiter, gstRoutes);
+app.use('/api/leads', leadsLimiter, leadRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);
@@ -82,6 +120,9 @@ if (process.env.VERCEL !== '1') {
     app.listen(PORT, () => {
         console.log(`🚀 Server running on port ${PORT}`);
         console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-        console.log(`🌐 Frontend URL: ${process.env.FRONTEND_URL}`);
+        console.log(`🌐 Allowed origins: ${getAllowedOrigins().join(', ') || '(none listed)'}`);
+        if (process.env.NODE_ENV !== 'production') {
+            console.log('🌐 Dev CORS: also allows http://localhost:* and http://127.0.0.1:*');
+        }
     });
 }

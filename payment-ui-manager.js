@@ -86,6 +86,23 @@ function hideError() {
     }
 }
 
+// Lead form inline errors (modal)
+function showLeadFormError(message) {
+    const el = document.getElementById('lead-form-error');
+    if (el) {
+        el.textContent = message;
+        el.style.display = 'block';
+    }
+}
+
+function hideLeadFormError() {
+    const el = document.getElementById('lead-form-error');
+    if (el) {
+        el.textContent = '';
+        el.style.display = 'none';
+    }
+}
+
 // Disable payment button
 function disablePaymentButton() {
     const button = document.getElementById('m-cta-btn');

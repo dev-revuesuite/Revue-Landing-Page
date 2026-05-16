@@ -3043,6 +3043,59 @@ ul {
   line-height: 1.6;
 }
 
+.m-section-lead {
+  animation: mFadeUp 0.5s 0.22s ease both;
+}
+
+.m-lead-heading {
+  font-family: var(--font-d);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text1);
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.m-lead-sub {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.55;
+  margin: 0 0 18px;
+}
+
+.lead-form-error {
+  display: none;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+  border: 1px solid rgba(192, 57, 43, 0.2);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 16px;
+}
+
+.m-gst-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13.5px;
+  color: var(--text2);
+  margin: 4px 0 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.m-gst-check input {
+  margin-top: 3px;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+.lead-gst-field.is-hidden {
+  display: none;
+}
+
 .m-section-5 {
   animation: mFadeUp 0.5s 0.25s ease both;
 }

@@ -1,17 +1,10 @@
 const razorpayService = require('../../backend/services/razorpayService');
 const { getPlanDetails, generateReceiptId } = require('../../backend/utils/helpers');
 const { CURRENCY, ERROR_CODES } = require('../../backend/utils/constants');
+const { handlePreflight } = require('../../backend/utils/vercelCors');
 
 module.exports = async (req, res) => {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', process.env.FRONTEND_URL || '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-    // Handle OPTIONS request
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
+    if (handlePreflight(req, res)) {
         return;
     }
 
@@ -24,7 +17,7 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { plan, email } = req.body;
+        const { plan, email, name, gstin } = req.body;
 
         // Validate plan and email
         if (!plan || !email) {
@@ -63,7 +56,9 @@ module.exports = async (req, res) => {
                 email: email,
                 plan: plan,
                 planName: planDetails.name,
-                timestamp: new Date().toISOString()
+                timestamp: new Date().toISOString(),
+                ...(name ? { name: String(name).trim() } : {}),
+                ...(gstin ? { gstin: String(gstin).trim() } : {})
             }
         };
 
