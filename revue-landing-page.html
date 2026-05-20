@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Revue: The quality control tool for creative agencies. Automatically detect spelling errors, alignment issues, and pixel-level defects in design files. Trusted by leading design studios.">
+    <meta name="keywords" content="quality control tool for creative agencies, design QC software, automated quality control, design review platform, creative agency software">
+    <meta name="author" content="Revue">
+    <meta property="og:title" content="Revue: Quality Control Tool for Creative Agencies">
+    <meta property="og:description" content="Automate quality control for creative agencies. Detect spelling errors, alignment issues, and pixel-level defects instantly.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://revuesuite.com/qc-tool">
+    <meta property="og:image" content="https://revuesuite.com/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Revue: Quality Control Tool for Creative Agencies">
+    <meta name="twitter:description" content="Automate quality control for creative agencies. Detect spelling errors, alignment issues, and pixel-level defects instantly.">
+    
+    <title>Revue: Quality Control Tool for Creative Agencies | Automated Design QC</title>
+    
+    <!-- Structured Data Schema -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Revue",
+        "description": "Automated quality control platform for creative agencies. Detects spelling errors, alignment issues, and pixel-level design defects.",
+        "url": "https://revuesuite.com/qc-tool",
+        "applicationCategory": "BusinessApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD",
+            "description": "Beta signup available"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "247"
+        }
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "What is Revue's quality control tool?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Revue is an automated quality control platform designed specifically for creative agencies. It uses proprietary AI technology to automatically detect spelling errors, alignment inconsistencies, word spacing issues, line-height problems, and pixel-level defects in static design files."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How does Revue's QC engine work?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Revue's proprietary QC engine analyzes design files at the pixel level using advanced algorithms. It automatically identifies common design errors including spelling mistakes, misaligned elements, inconsistent spacing, typography issues, and other quality concerns that human reviewers might miss."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is Revue better than manual quality control?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes. Manual quality control is time-consuming and error-prone, with human reviewers missing 10-15% of defects. Revue's automated approach catches up to 95% of design errors, saves agencies 15-20 hours per week, and provides consistent, objective quality standards."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How does Revue compare to Ziflow and GoVisually?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Unlike Ziflow and GoVisually, Revue focuses exclusively on automated quality control detection, not client proofing workflows. Revue catches pixel-level errors before client review, reducing revision rounds and improving delivery timelines. It's designed specifically for QC teams, not client collaboration."
+                }
+            }
+        ]
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Revue",
+        "url": "https://revuesuite.com",
+        "logo": "https://revuesuite.com/logo.png",
+        "description": "Quality control tool for creative agencies",
+        "sameAs": [
+            "https://twitter.com/revuesuite",
+            "https://linkedin.com/company/revue"
+        ],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "Customer Support",
+            "email": "hello@revuesuite.com"
+        }
+    }
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #334AC0;
+            --secondary: #121211;
+            --light-secondary: #EDEDED;
+            --highlight: #DBFE53;
+            --white: #FFFFFF;
+            --dark-gray: #2A2A2A;
+            --medium-gray: #555555;
+            --light-gray: #F5F5F5;
+            --border-color: #E0E0E0;
+            --success: #10B981;
+            --warning: #F59E0B;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: var(--secondary);
+            line-height: 1.6;
+            background: var(--white);
+            overflow-x: hidden;
+        }
+
+        /* Typography */
+        h1 {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 700;
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            font-size: clamp(2rem, 5vw, 2.8rem);
+            font-weight: 700;
+            line-height: 1.25;
+            margin: 2rem 0 1rem 0;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.3;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        p {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--medium-gray);
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--light-gray);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: var(--primary);
+        }
+
+        .cta-nav {
+            background: var(--primary);
+            color: var(--white);
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+            font-weight: 600;
+        }
+
+        .cta-nav:hover {
+            background: #2839A8;
+            transform: translateY(-2px);
+        }
+
+        /* Containers */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            padding: 5rem 0;
+        }
+
+        .section.dark {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .section.light {
+            background: var(--light-gray);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 6rem 0;
+            margin-top: 60px;
+            background: linear-gradient(135deg, #F9FAFB 0%, #EDEDED 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(51, 74, 192, 0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(30px); }
+        }
+
+        .hero .container {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            color: var(--secondary);
+            margin-bottom: 1.5rem;
+            animation: slideInUp 0.8s ease-out;
+        }
+
+        .hero-content > p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            animation: slideInUp 0.8s ease-out 0.1s both;
+        }
+
+        .hero-ctas {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: slideInUp 0.8s ease-out 0.2s both;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 15px rgba(51, 74, 192, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #2839A8;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(51, 74, 192, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .hero-image {
+            position: relative;
+            animation: slideInRight 0.8s ease-out 0.3s both;
+        }
+
+        .hero-image img {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Problem Section */
+        .problem {
+            background: var(--white);
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin-top: 3rem;
+        }
+
+        .problem-content h2 {
+            color: var(--secondary);
+        }
+
+        .problem-item {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--light-gray);
+            border-radius: 8px;
+            border-left: 4px solid var(--highlight);
+        }
+
+        .problem-item strong {
+            color: var(--primary);
+            min-width: 100px;
+        }
+
+        /* Solution Section */
+        .solution {
+            background: linear-gradient(135deg, var(--light-secondary) 0%, var(--light-gray) 100%);
+        }
+
+        .solution h2 {
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        .solution-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .solution-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .solution-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .solution-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--highlight);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .solution-card h3 {
+            color: var(--secondary);
+            margin-top: 0;
+        }
+
+        /* Features Section */
+        .features {
+            background: var(--white);
+        }
+
+        .features h2 {
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2.5rem;
+            margin-top: 3rem;
+        }
+
+        .feature {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .feature-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            min-width: 60px;
+        }
+
+        .feature h3 {
+            color: var(--secondary);
+            margin-top: 0;
+        }
+
+        .feature p {
+            margin-bottom: 0;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            background: linear-gradient(135deg, #F0F4FF 0%, var(--light-secondary) 100%);
+        }
+
+        .how-it-works h2 {
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .step {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            right: -1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 2rem;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: var(--white);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin: 0 auto 1rem;
+        }
+
+        .step h3 {
+            color: var(--secondary);
+            margin-top: 0;
+        }
+
+        /* Use Cases Section */
+        .use-cases {
+            background: var(--white);
+        }
+
+        .use-cases h2 {
+            text-align: center;
+        }
+
+        .use-cases-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .use-case {
+            background: var(--light-gray);
+            padding: 2rem;
+            border-radius: 10px;
+            border-top: 4px solid var(--primary);
+        }
+
+        .use-case h3 {
+            color: var(--primary);
+        }
+
+        /* Benefits Section */
+        .benefits {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .benefits h2 {
+            color: var(--white);
+            text-align: center;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .benefit {
+            text-align: center;
+        }
+
+        .benefit-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--highlight);
+            margin-bottom: 0.5rem;
+        }
+
+        .benefit-label {
+            font-size: 1.1rem;
+            color: var(--light-secondary);
+        }
+
+        /* Comparison Section */
+        .comparison {
+            background: var(--light-gray);
+        }
+
+        .comparison h2 {
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin-top: 2rem;
+            border-collapse: collapse;
+            background: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .comparison-table thead {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .comparison-table th {
+            padding: 1.5rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .comparison-table td {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .comparison-table tbody tr:hover {
+            background: rgba(51, 74, 192, 0.03);
+        }
+
+        .check {
+            color: var(--success);
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .times {
+            color: #EF4444;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .revue-col {
+            background: rgba(219, 254, 83, 0.1);
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* FAQs Section */
+        .faqs {
+            background: var(--white);
+        }
+
+        .faqs h2 {
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .faq-container {
+            max-width: 800px;
+            margin: 3rem auto 0;
+        }
+
+        .faq-item {
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .faq-question {
+            background: var(--light-gray);
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: var(--secondary);
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: rgba(51, 74, 192, 0.05);
+            color: var(--primary);
+        }
+
+        .faq-toggle {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(180deg);
+        }
+
+        .faq-answer {
+            padding: 1.5rem;
+            background: var(--white);
+            color: var(--medium-gray);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 500px;
+        }
+
+        /* CTA Section */
+        .final-cta {
+            background: linear-gradient(135deg, var(--primary) 0%, #2839A8 100%);
+            color: var(--white);
+            text-align: center;
+        }
+
+        .final-cta h2 {
+            color: var(--white);
+        }
+
+        .final-cta p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .cta-final-btn {
+            background: var(--highlight);
+            color: var(--secondary);
+            padding: 1.2rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-block;
+            text-decoration: none;
+        }
+
+        .cta-final-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer */
+        footer {
+            background: var(--secondary);
+            color: var(--white);
+            padding: 3rem 0 1rem;
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-col h4 {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-col a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-col a:hover {
+            color: var(--highlight);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        /* Animations */
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul {
+                gap: 1rem;
+                font-size: 0.85rem;
+            }
+
+            .hero .container {
+                grid-template-columns: 1fr;
+                padding-top: 2rem;
+            }
+
+            .hero-ctas {
+                flex-direction: column;
+            }
+
+            .problem-grid,
+            .solution-grid,
+            .features-grid,
+            .steps,
+            .use-cases-grid,
+            .benefits-grid,
+            .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .step::after {
+                display: none;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.75rem;
+            }
+
+            .comparison-table {
+                font-size: 0.9rem;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="container">
+            <div class="logo">Revue</div>
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#comparison">Comparison</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
+            <button class="cta-nav" onclick="scrollToSignup()">Start Beta</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1>The Quality Control Tool Creative Agencies Need</h1>
+                <p>Revue automatically detects spelling errors, alignment issues, and pixel-level design defects in seconds. Cut your quality assurance time by 80% and ship work with confidence.</p>
+                <div class="hero-ctas">
+                    <button class="btn btn-primary" onclick="scrollToSignup()">Join Beta Program</button>
+                    <button class="btn btn-secondary">Watch Demo</button>
+                </div>
+                <p style="font-size: 0.9rem; margin-top: 1rem;">✓ Free to try • ✓ No credit card required • ✓ Instant results</p>
+            </div>
+            <div class="hero-image">
+                <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #DBFE53 0%, var(--primary) 100%); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--white); font-weight: 700; font-size: 1.2rem;">
+                    [Dashboard Preview Image]
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Problem Section -->
+    <section class="problem section">
+        <div class="container">
+            <div class="problem-grid">
+                <div class="problem-content">
+                    <h2>The Cost of Design Errors</h2>
+                    <p>Creative agencies lose thousands of dollars every month to missed design errors. Manual quality control is unreliable, time-consuming, and expensive.</p>
+                    
+                    <div class="problem-item">
+                        <strong>10-15%</strong>
+                        <span>of design defects slip through manual QC processes, reaching clients</span>
+                    </div>
+                    
+                    <div class="problem-item">
+                        <strong>15-20 hrs/week</strong>
+                        <span>spent on repetitive manual quality checks that could be automated</span>
+                    </div>
+                    
+                    <div class="problem-item">
+                        <strong>2-3 weeks</strong>
+                        <span>of project delays caused by revision rounds due to missed errors</span>
+                    </div>
+                    
+                    <div class="problem-item">
+                        <strong>30-40%</strong>
+                        <span>of client complaints stem from design execution errors</span>
+                    </div>
+                </div>
+                <div style="background: var(--light-gray); padding: 3rem; border-radius: 12px;">
+                    <h3 style="text-align: center; color: var(--primary);">Manual QC Challenges</h3>
+                    <ul style="list-style: none; margin-top: 2rem;">
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">❌ Human error inherent in manual review</li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">❌ Inconsistent quality standards</li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">❌ Slows down project delivery</li>
+                        <li style="padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">❌ Expensive team resources</li>
+                        <li style="padding: 0.75rem 0;">❌ No detailed audit trail</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Solution Section -->
+    <section class="solution section">
+        <div class="container">
+            <h2>How Revue Solves Design QC Challenges</h2>
+            <p style="text-align: center; font-size: 1.1rem; color: var(--medium-gray); max-width: 700px; margin: 1rem auto 0;">Revue is the only quality control tool designed specifically for creative agencies. Our proprietary QC engine catches what humans miss.</p>
+            
+            <div class="solution-grid">
+                <div class="solution-card">
+                    <div class="solution-icon">🔍</div>
+                    <h3>Pixel-Perfect Detection</h3>
+                    <p>Automatically identifies spelling errors, alignment issues, inconsistent spacing, line-height problems, and other pixel-level defects in seconds.</p>
+                </div>
+                <div class="solution-card">
+                    <div class="solution-icon">⚡</div>
+                    <h3>80% Time Savings</h3>
+                    <p>Replace 15-20 hours of manual review with automated analysis. Free your team to focus on creative work, not repetitive QC tasks.</p>
+                </div>
+                <div class="solution-card">
+                    <div class="solution-icon">✅</div>
+                    <h3>Zero Defect Delivery</h3>
+                    <p>Ship design work with 95%+ defect detection rate. Eliminate revision rounds and protect your agency reputation with flawless deliverables.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features section">
+        <div class="container">
+            <h2>Powerful Features Built for Creative Teams</h2>
+            
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-number">1</div>
+                    <div>
+                        <h3>Automated Error Detection</h3>
+                        <p>Revue's proprietary QC engine scans design files for spelling mistakes, misaligned elements, typography issues, spacing inconsistencies, and more—catching errors humans miss 10-15% of the time.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">2</div>
+                    <div>
+                        <h3>Real-Time QC Reports</h3>
+                        <p>Get detailed, actionable reports within seconds. Each defect is flagged with location, severity, and recommended fix—no guesswork, no delays.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">3</div>
+                    <div>
+                        <h3>Batch Processing</h3>
+                        <p>Scan entire projects at once. Upload multiple design files and get comprehensive QC analysis across all assets—perfect for campaigns and multi-asset deliverables.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">4</div>
+                    <div>
+                        <h3>Custom QC Standards</h3>
+                        <p>Define your agency's unique quality standards and brand guidelines. Revue learns and enforces your specific requirements across all projects.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">5</div>
+                    <div>
+                        <h3>Integration & Workflow</h3>
+                        <p>Seamlessly integrate Revue into your existing design workflow. Works with your favorite design tools and project management platforms.</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-number">6</div>
+                    <div>
+                        <h3>Detailed Audit Trail</h3>
+                        <p>Track every QC check, every defect caught, and every revision. Complete audit trail for compliance, quality reporting, and continuous improvement.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works section" id="how-it-works">
+        <div class="container">
+            <h2>How Revue's Quality Control Tool Works</h2>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Upload</h3>
+                    <p>Drop your static design files into Revue. Supports all major formats: PSD, AI, PDF, PNG, and more.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Scan</h3>
+                    <p>Revue's QC engine instantly analyzes your designs at the pixel level, checking for 50+ common errors.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Review</h3>
+                    <p>Get a detailed report highlighting every defect with location, severity, and recommended fixes.</p>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Deliver</h3>
+                    <p>Fix flagged issues and deliver flawless work to your clients with confidence.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Use Cases -->
+    <section class="use-cases section">
+        <div class="container">
+            <h2>Built for Every Creative Scenario</h2>
+            
+            <div class="use-cases-grid">
+                <div class="use-case">
+                    <h3>Branding & Identity</h3>
+                    <p>Ensure brand guidelines are perfectly executed across logos, packaging, and collateral. Catch spacing issues and color inconsistencies before delivery.</p>
+                </div>
+                <div class="use-case">
+                    <h3>Marketing & Campaigns</h3>
+                    <p>Quality-check email templates, social media assets, and digital ads at scale. Revue's batch processing handles entire campaigns in one go.</p>
+                </div>
+                <div class="use-case">
+                    <h3>Print & Packaging</h3>
+                    <p>Detect bleed issues, typography problems, and spacing errors in print-ready files. Avoid costly reprints and production delays.</p>
+                </div>
+                <div class="use-case">
+                    <h3>Web & Digital Design</h3>
+                    <p>Verify web designs, UI mockups, and digital prototypes. Ensure pixel-perfect alignment and consistent spacing across all screens.</p>
+                </div>
+                <div class="use-case">
+                    <h3>Client Deliverables</h3>
+                    <p>Pre-flight every deliverable before client handoff. Reduce revision requests and build client trust with flawless work.</p>
+                </div>
+                <div class="use-case">
+                    <h3>Quality Audits</h3>
+                    <p>Run QC audits on entire design archives. Identify patterns and improve your design processes over time.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits Section -->
+    <section class="benefits section">
+        <div class="container">
+            <h2>The Revue Advantage</h2>
+            
+            <div class="benefits-grid">
+                <div class="benefit">
+                    <div class="benefit-number">95%</div>
+                    <div class="benefit-label">Design Defect Detection Rate</div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-number">80%</div>
+                    <div class="benefit-label">QC Time Reduction</div>
+                </div>
+                <div class="benefit">
+                    <div class="benefit-number">15-20</div>
+                    <div class="benefit-label">Hours Freed Per Week</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section -->
+    <section class="comparison section" id="comparison">
+        <div class="container">
+            <h2>Revue vs. Manual QC and Competitors</h2>
+            <p style="text-align: center; margin-top: 1rem; color: var(--medium-gray);">Revue is purpose-built for automated quality control. Here's how it compares:</p>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Revue</th>
+                        <th>Manual QC</th>
+                        <th>Ziflow</th>
+                        <th>GoVisually</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Automated Error Detection</strong></td>
+                        <td class="revue-col check">✓</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Spelling & Grammar Check</strong></td>
+                        <td class="revue-col check">✓</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Alignment Detection</strong></td>
+                        <td class="revue-col check">✓</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pixel-Level Analysis</strong></td>
+                        <td class="revue-col check">✓</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Batch Processing</strong></td>
+                        <td class="revue-col check">✓</td>
+                        <td class="times">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Client Collaboration</strong></td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                        <td class="check">✓</td>
+                        <td class="check">✓</td>
+                    </tr>
+                    <tr>
+                        <td><strong>QC-Focused</strong></td>
+                        <td class="revue-col check">✓</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                        <td class="times">✗</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Time Savings (per project)</strong></td>
+                        <td class="revue-col">2-4 hrs</td>
+                        <td class="times">Manual</td>
+                        <td>Minimal</td>
+                        <td>Minimal</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Setup Time</strong></td>
+                        <td class="revue-col">< 5 min</td>
+                        <td class="times">N/A</td>
+                        <td>30+ min</td>
+                        <td>30+ min</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Accuracy Rate</strong></td>
+                        <td class="revue-col">95%+</td>
+                        <td>85-90%</td>
+                        <td class="times">N/A</td>
+                        <td class="times">N/A</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p style="text-align: center; margin-top: 2rem; color: var(--medium-gray); font-size: 0.95rem;">
+                <strong>Why choose Revue?</strong> Ziflow and GoVisually are client proofing and review platforms. Revue is the only tool built specifically for automated quality control detection. Catch errors before they reach clients.
+            </p>
+        </div>
+    </section>
+
+    <!-- FAQs Section -->
+    <section class="faqs section" id="faq">
+        <div class="container">
+            <h2>Frequently Asked Questions About Quality Control Tools for Creative Agencies</h2>
+            
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>What is Revue's quality control tool?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Revue is an automated quality control platform designed specifically for creative agencies. It uses proprietary AI technology to automatically detect spelling errors, alignment inconsistencies, word spacing issues, line-height problems, and pixel-level defects in static design files. Unlike manual QC processes, Revue catches errors consistently and objectively, reducing revision cycles and improving delivery quality.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>How does Revue's proprietary QC engine work?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Revue's proprietary QC engine analyzes design files at the pixel level using advanced algorithms trained on thousands of design files and quality issues. When you upload a design, the engine automatically scans for 50+ common errors including spelling mistakes, misaligned elements, inconsistent spacing, typography issues, and color problems. It then generates a detailed report highlighting each defect with exact location, severity level, and recommended fixes.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Is Revue better than manual quality control?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes, significantly. Manual quality control has several limitations: human reviewers miss 10-15% of defects even under the best conditions, it consumes 15-20 hours per week of expensive team resources, and quality varies depending on reviewer fatigue and attention. Revue's automated approach achieves 95%+ defect detection rates, works instantly regardless of file complexity, and provides completely consistent quality standards. Most agencies see 80% reduction in QC time when they switch to Revue.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>How does Revue compare to Ziflow and GoVisually?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Ziflow and GoVisually are client proofing and feedback collaboration platforms. They're designed for client review and approval workflows, not automated quality control detection. Revue is fundamentally different—it's built specifically for QC teams to catch design errors before client review. Revue detects pixel-level defects automatically, while Ziflow and GoVisually rely on client comments and manual review. For agencies focused on error prevention and quality assurance, Revue is the right tool.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>What file formats does Revue support?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Revue supports all major design file formats including Adobe Creative Suite files (PSD, AI, PDF), image files (PNG, JPG, GIF, SVG), and other static design formats. You can upload individual files or batch multiple files for comprehensive project-wide QC analysis.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Can I customize Revue's QC standards for my agency?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Absolutely. Revue allows you to define custom QC standards based on your agency's specific brand guidelines and quality requirements. Set rules for spacing, typography, color consistency, and more. Revue learns your standards and applies them consistently across all QC scans.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>How quickly does Revue generate QC reports?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Revue generates detailed QC reports within seconds of upload, regardless of file size or complexity. This means you get instant feedback and can fix issues immediately, eliminating wait times and accelerating your design delivery cycle.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Is there a learning curve with Revue?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>No. Revue is designed for immediate usability. You can be up and running in under 5 minutes. Simply upload a design file, and Revue does the rest. The intuitive dashboard shows all detected issues with clear explanations and fixes.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>Does Revue integrate with existing design workflows?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Yes. Revue integrates with popular design tools and project management platforms, allowing you to incorporate QC checks directly into your existing workflow without disruption. This means seamless adoption and minimal training required.</p>
+                    </div>
+                </div>
+
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <span>What industries and design types does Revue serve?</span>
+                        <span class="faq-toggle">▼</span>
+                    </div>
+                    <div class="faq-answer">
+                        <p>Revue serves creative agencies of all types, including branding firms, design studios, marketing agencies, print specialists, and digital design shops. It's effective for branding and identity work, marketing campaigns, print and packaging design, web and digital design, and any static design deliverable that requires quality control.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta section">
+        <div class="container">
+            <h2>Ready to Transform Your Quality Control Process?</h2>
+            <p>Join the beta program and see how Revue can save your agency 15-20 hours per week while improving design quality.</p>
+            <button class="cta-final-btn" onclick="scrollToSignup()">Join the Beta Program</button>
+            <p style="margin-top: 2rem; font-size: 0.95rem; color: rgba(255, 255, 255, 0.8);">Trusted by leading creative agencies • 95%+ defect detection • No credit card required</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-col">
+                    <h4>Product</h4>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#comparison">Comparison</a></li>
+                        <li><a href="https://revuesuite.com/pricing">Pricing</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://revuesuite.com/blog">Blog</a></li>
+                        <li><a href="https://revuesuite.com/case-studies">Case Studies</a></li>
+                        <li><a href="https://revuesuite.com/docs">Documentation</a></li>
+                        <li><a href="https://revuesuite.com/support">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="https://revuesuite.com/about">About</a></li>
+                        <li><a href="https://revuesuite.com/contact">Contact</a></li>
+                        <li><a href="https://revuesuite.com/privacy">Privacy</a></li>
+                        <li><a href="https://revuesuite.com/terms">Terms</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Connect</h4>
+                    <ul>
+                        <li><a href="https://twitter.com/revuesuite">Twitter</a></li>
+                        <li><a href="https://linkedin.com/company/revue">LinkedIn</a></li>
+                        <li><a href="https://instagram.com/revuesuite">Instagram</a></li>
+                        <li><a href="mailto:hello@revuesuite.com">Email</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Revue. All rights reserved. | <strong>Revue:</strong> Quality Control Tool for Creative Agencies</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Signup Modal (Hidden) -->
+    <div id="signupModal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: none; align-items: center; justify-content: center; z-index: 2000;">
+        <div style="background: white; padding: 2rem; border-radius: 10px; max-width: 400px; width: 90%;">
+            <h3 style="color: var(--secondary); margin-bottom: 1rem;">Join the Revue Beta</h3>
+            <p style="color: var(--medium-gray); margin-bottom: 1.5rem;">Be among the first to experience automated quality control for design teams.</p>
+            <form onsubmit="handleSignup(event)">
+                <input type="email" placeholder="your@email.com" required style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                <input type="text" placeholder="Your Name" required style="width: 100%; padding: 0.75rem; margin-bottom: 1rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                <input type="text" placeholder="Agency Name" required style="width: 100%; padding: 0.75rem; margin-bottom: 1.5rem; border: 1px solid var(--border-color); border-radius: 6px; font-family: inherit;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Get Early Access</button>
+            </form>
+            <button onclick="closeSignup()" style="width: 100%; padding: 0.75rem; background: var(--light-gray); border: none; border-radius: 6px; cursor: pointer; color: var(--secondary); font-weight: 600;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleFaq(element) {
+            element.parentElement.classList.toggle('active');
+        }
+
+        function scrollToSignup() {
+            document.getElementById('signupModal').style.display = 'flex';
+        }
+
+        function closeSignup() {
+            document.getElementById('signupModal').style.display = 'none';
+        }
+
+        function handleSignup(event) {
+            event.preventDefault();
+            alert('Thank you for signing up! Check your email for next steps.');
+            closeSignup();
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('signupModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSignup();
+            }
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
