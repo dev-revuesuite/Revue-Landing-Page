@@ -1,0 +1,22 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Junk — do not commit
+*.exe
+*.docx
+*.tar.gz
+
+# Next.js blog app (see Blog/Revue-cms/revue-cms/.gitignore)
+Blog/Revue-cms/revue-cms/node_modules/
+Blog/Revue-cms/revue-cms/.next/
+Blog/Revue-cms/revue-cms/.env.local
+
+# Backend local env
+backend/.env
