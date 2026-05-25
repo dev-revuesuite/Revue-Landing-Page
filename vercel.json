@@ -1,13 +1,16 @@
 {
     "version": 2,
     "rewrites": [
-        {
-            "source": "/qc-tool",
-            "destination": "/revue-landing-page.html"
-        },
-        {
-            "source": "/qc-tool/",
-            "destination": "/revue-landing-page.html"
-        }
+        { "source": "/qc-tool", "destination": "/revue-landing-page.html" },
+        { "source": "/qc-tool/", "destination": "/revue-landing-page.html" },
+
+        { "source": "/blog", "destination": "https://revue-blog.vercel.app/blog" },
+        { "source": "/blog/:path*", "destination": "https://revue-blog.vercel.app/blog/:path*" },
+        { "source": "/login", "destination": "https://revue-blog.vercel.app/login" },
+        { "source": "/cms", "destination": "https://revue-blog.vercel.app/cms" },
+        { "source": "/cms/:path*", "destination": "https://revue-blog.vercel.app/cms/:path*" },
+        { "source": "/sitemap.xml", "destination": "https://revue-blog.vercel.app/sitemap.xml" },
+        { "source": "/rss.xml", "destination": "https://revue-blog.vercel.app/rss.xml" },
+        { "source": "/robots.txt", "destination": "https://revue-blog.vercel.app/robots.txt" }
     ]
 }
