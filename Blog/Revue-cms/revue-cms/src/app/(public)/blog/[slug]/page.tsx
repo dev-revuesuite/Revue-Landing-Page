@@ -1,9 +1,9 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { createClient, createServiceClient } from '@/lib/supabase/server';
+import { createAnonClient, createClient } from '@/lib/supabase/server';
 import { buildMetadata, articleJsonLd, faqJsonLd, breadcrumbJsonLd } from '@/lib/seo';
-import { absoluteUrl, formatDate } from '@/lib/utils';
+import { absoluteUrl, featuredImageAlt, formatDate } from '@/lib/utils';
 import { ReadingProgress } from '@/components/site/reading-progress';
 import { ShareButtons } from '@/components/site/share-buttons';
 import { TableOfContents } from '@/components/site/toc';
@@ -13,7 +13,7 @@ export const revalidate = 60;
 
 // ---------- Static params (ISR) ----------
 export async function generateStaticParams() {
-  const supabase = createServiceClient();
+  const supabase = createAnonClient();
   const { data } = await supabase
     .from('posts')
     .select('slug')
@@ -163,7 +163,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             <div className="relative aspect-[16/9] overflow-hidden rounded-md bg-mist">
               <Image
                 src={post.featured_image}
-                alt={post.title}
+                alt={featuredImageAlt(post.title, post.excerpt)}
                 fill
                 priority
                 sizes="(min-width: 1024px) 80vw, 100vw"
@@ -255,7 +255,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
                   <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-mist">
                     <Image
                       src={r.featured_image}
-                      alt={r.title}
+                      alt={featuredImageAlt(r.title, r.excerpt)}
                       fill
                       sizes="(min-width: 768px) 33vw, 100vw"
                       className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"

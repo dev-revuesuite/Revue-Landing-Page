@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import slugify from "slugify";
 import { createClient } from "@/lib/supabase/server";
@@ -53,6 +53,7 @@ export async function saveCategory(formData: FormData) {
   revalidatePath("/cms/categories");
   revalidatePath("/blog");
   revalidatePath("/sitemap.xml");
+  revalidateTag("categories");
   return { success: true };
 }
 
@@ -69,5 +70,6 @@ export async function deleteCategory(id: string) {
   revalidatePath("/cms/categories");
   revalidatePath("/blog");
   revalidatePath("/sitemap.xml");
+  revalidateTag("categories");
   return { success: true };
 }

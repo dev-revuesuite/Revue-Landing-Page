@@ -2,12 +2,8 @@
 
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import {
-  CMS_ACCESS_DENIED_MESSAGE,
-  CMS_NOT_CONFIGURED_MESSAGE,
-  getAllowedCmsEmail,
-  isAllowedCmsEmail,
-} from '@/lib/cms-auth';
+import { getAllowedCmsEmail, isAllowedCmsEmail } from '@/lib/cms-auth';
+import { loginErrorPath } from '@/lib/login-errors';
 import { createClient } from '@/lib/supabase/server';
 
 export async function login(formData: FormData) {
@@ -17,11 +13,11 @@ export async function login(formData: FormData) {
   const next = (formData.get('next') as string) || '/cms';
 
   if (!getAllowedCmsEmail()) {
-    redirect(`/login?error=${encodeURIComponent(CMS_NOT_CONFIGURED_MESSAGE)}`);
+    redirect(loginErrorPath('not_configured', next));
   }
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  if (error) redirect(loginErrorPath('invalid_credentials', next));
 
   const {
     data: { user },
@@ -29,17 +25,11 @@ export async function login(formData: FormData) {
 
   if (!isAllowedCmsEmail(user?.email)) {
     await supabase.auth.signOut();
-    redirect(`/login?error=${encodeURIComponent(CMS_ACCESS_DENIED_MESSAGE)}`);
+    redirect(loginErrorPath('access_denied', next));
   }
 
   revalidatePath('/', 'layout');
   redirect(next);
-}
-
-export async function signup() {
-  redirect(
-    `/login?error=${encodeURIComponent('Public signup is disabled. Use the admin account created in Supabase.')}`
-  );
 }
 
 /** Prefer client SignOutButton in CMS; redirect from server actions can cause "Failed to fetch". */

@@ -13,10 +13,10 @@ import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Code, Link as LinkIcon,
-  Image as ImageIcon, Table as TableIcon, Minus, Undo, Redo, Youtube as YoutubeIcon,
+  Image as ImageIcon, Table as TableIcon, Minus, Undo, Redo, Youtube as YoutubeIcon, Loader2,
 } from 'lucide-react';
 import { uploadMediaFile } from '@/app/cms/media/actions';
 
@@ -29,6 +29,8 @@ interface Props {
 
 export function TiptapEditor({ initialContent, onChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
@@ -57,8 +59,15 @@ export function TiptapEditor({ initialContent, onChange }: Props) {
       const file = e.dataTransfer?.files?.[0];
       if (!file || !file.type.startsWith('image/')) return;
       e.preventDefault();
-      const url = await uploadImage(file);
-      if (url) editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+      setUploading(true);
+      setUploadError(null);
+      const url = await uploadImageRaw(file);
+      setUploading(false);
+      if (!url) {
+        setUploadError('Upload failed. Try a smaller image (under 4 MB) or check your connection.');
+        return;
+      }
+      editor.chain().focus().setImage({ src: url, alt: file.name }).run();
     };
     el.addEventListener('drop', onDrop);
     return () => el.removeEventListener('drop', onDrop);
@@ -69,21 +78,53 @@ export function TiptapEditor({ initialContent, onChange }: Props) {
   const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const url = await uploadImage(file);
-    if (url) editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+    setUploading(true);
+    setUploadError(null);
+    const url = await uploadImageRaw(file);
+    setUploading(false);
     e.target.value = '';
+    if (!url) {
+      setUploadError('Upload failed. Try a smaller image (under 4 MB) or check your connection.');
+      return;
+    }
+    editor.chain().focus().setImage({ src: url, alt: file.name }).run();
   };
 
   return (
     <div>
-      <Toolbar editor={editor} onImageClick={() => fileRef.current?.click()} />
+      <Toolbar
+        editor={editor}
+        onImageClick={() => fileRef.current?.click()}
+        uploading={uploading}
+      />
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickImage} />
+      {uploading && <p className="mb-3 text-xs text-muted-foreground">Uploading image…</p>}
+      {uploadError && (
+        <p className="mb-3 text-xs text-red-600">
+          {uploadError}{' '}
+          <button
+            type="button"
+            onClick={() => setUploadError(null)}
+            className="underline hover:text-red-800"
+          >
+            Dismiss
+          </button>
+        </p>
+      )}
       <EditorContent editor={editor} />
     </div>
   );
 }
 
-function Toolbar({ editor, onImageClick }: { editor: Editor; onImageClick: () => void }) {
+function Toolbar({
+  editor,
+  onImageClick,
+  uploading,
+}: {
+  editor: Editor;
+  onImageClick: () => void;
+  uploading: boolean;
+}) {
   const Btn = ({ active, onClick, label, children }: any) => (
     <button
       type="button"
@@ -151,8 +192,15 @@ function Toolbar({ editor, onImageClick }: { editor: Editor; onImageClick: () =>
       >
         <LinkIcon className="h-4 w-4" />
       </Btn>
-      <Btn label="Image" onClick={onImageClick}>
-        <ImageIcon className="h-4 w-4" />
+      <Btn
+        label={uploading ? 'Uploading image…' : 'Image'}
+        onClick={uploading ? () => {} : onImageClick}
+      >
+        {uploading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <ImageIcon className="h-4 w-4" />
+        )}
       </Btn>
       <Btn
         label="YouTube"
@@ -185,13 +233,11 @@ function Toolbar({ editor, onImageClick }: { editor: Editor; onImageClick: () =>
 }
 
 // ---------- Image upload (server action — uses CMS session cookies) ----------
-async function uploadImage(file: File): Promise<string | null> {
+/** Returns null on error; caller is expected to surface the error via UI. */
+async function uploadImageRaw(file: File): Promise<string | null> {
   const fd = new FormData();
   fd.set('file', file);
   const res = await uploadMediaFile(fd);
-  if (res.error) {
-    alert('Upload failed: ' + res.error);
-    return null;
-  }
+  if (res.error) return null;
   return res.row?.url ?? null;
 }

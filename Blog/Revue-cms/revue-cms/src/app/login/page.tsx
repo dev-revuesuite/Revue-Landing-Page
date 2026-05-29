@@ -2,14 +2,16 @@ import { login } from './actions';
 import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { resolveLoginErrorMessage } from '@/lib/login-errors';
 export const metadata = { title: 'Sign in' };
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; message?: string; next?: string }>;
+  searchParams: Promise<{ code?: string; message?: string; next?: string }>;
 }) {
   const sp = await searchParams;
+  const errorMessage = resolveLoginErrorMessage(sp.code);
 
   return (
     <main className="grid min-h-screen md:grid-cols-2">
@@ -34,9 +36,9 @@ export default async function LoginPage({
             Admin access only. Sign in with your authorized account.
           </p>
 
-          {sp.error && (
+          {errorMessage && (
             <div className="mt-6 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-              {sp.error}
+              {errorMessage}
             </div>
           )}
           {sp.message && (

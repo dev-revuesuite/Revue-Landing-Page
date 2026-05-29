@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import Image from "next/image";
 import { Upload, X, Trash2, Copy, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,12 @@ export function MediaLibrary({ initialMedia }: { initialMedia: Media[] }) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (!uploadError) return;
+    const t = setTimeout(() => setUploadError(null), 8000);
+    return () => clearTimeout(t);
+  }, [uploadError]);
 
   async function handleUpload(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -76,9 +82,17 @@ export function MediaLibrary({ initialMedia }: { initialMedia: Media[] }) {
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
       <div>
         {uploadError && (
-          <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-            {uploadError}
-          </p>
+          <div className="mb-4 flex items-start justify-between gap-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <span>{uploadError}</span>
+            <button
+              type="button"
+              onClick={() => setUploadError(null)}
+              aria-label="Dismiss"
+              className="text-red-600 hover:text-red-800"
+            >
+              ×
+            </button>
+          </div>
         )}
         <div className="flex items-center justify-between mb-4">
           <p className="text-sm text-ink-muted">{media.length} assets</p>

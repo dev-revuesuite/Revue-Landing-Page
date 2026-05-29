@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { buildMetadata } from '@/lib/seo';
-import { formatDate } from '@/lib/utils';
+import { formatDate, featuredImageAlt } from '@/lib/utils';
 
 export const revalidate = 300;
 
@@ -30,6 +30,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
     .select('id,title,slug,excerpt,featured_image,published_at,reading_time')
     .eq('author_id', author.id)
     .eq('status', 'published')
+    .lte('published_at', new Date().toISOString())
     .order('published_at', { ascending: false });
 
   return (
@@ -60,7 +61,7 @@ export default async function AuthorPage({ params }: { params: Promise<{ slug: s
               </div>
               {p.featured_image && (
                 <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-mist">
-                  <Image src={p.featured_image} alt={p.title} fill sizes="280px" className="object-cover" />
+                  <Image src={p.featured_image} alt={featuredImageAlt(p.title, p.excerpt)} fill sizes="280px" className="object-cover" />
                 </div>
               )}
             </Link>

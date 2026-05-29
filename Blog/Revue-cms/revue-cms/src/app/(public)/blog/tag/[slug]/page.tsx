@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { buildMetadata } from '@/lib/seo';
-import { formatDate } from '@/lib/utils';
+import { formatDate, featuredImageAlt } from '@/lib/utils';
 
 export const revalidate = 300;
 
@@ -32,7 +32,13 @@ export default async function TagPage({ params }: { params: Promise<{ slug: stri
 
   const posts = (rows ?? [])
     .map((r: any) => r.posts)
-    .filter((p: any) => p && p.status === 'published');
+    .filter(
+      (p: any) =>
+        p &&
+        p.status === 'published' &&
+        p.published_at &&
+        new Date(p.published_at) <= new Date(),
+    );
 
   return (
     <section className="container max-w-4xl py-16 md:py-24">
@@ -54,7 +60,7 @@ export default async function TagPage({ params }: { params: Promise<{ slug: stri
               </div>
               {p.featured_image && (
                 <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-mist">
-                  <Image src={p.featured_image} alt={p.title} fill sizes="280px" className="object-cover" />
+                  <Image src={p.featured_image} alt={featuredImageAlt(p.title, p.excerpt)} fill sizes="280px" className="object-cover" />
                 </div>
               )}
             </Link>

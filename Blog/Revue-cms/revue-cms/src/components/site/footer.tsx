@@ -11,7 +11,7 @@ export function SiteFooter() {
         </div>
         <div className="flex flex-wrap gap-[18px]">
           <a href="https://revuesuite.com" className="hover:text-ink">Product</a>
-          <a href="https://revuesuite.com/beta" className="hover:text-ink">Pricing</a>
+          <a href="https://revuesuite.com/join-beta.html" className="hover:text-ink">Pricing</a>
           <Link href="/rss.xml" className="hover:text-ink">RSS</Link>
           <a href="https://twitter.com/revuesuite" className="hover:text-ink">Twitter</a>
           <a href="https://linkedin.com/company/revuesuite" className="hover:text-ink">LinkedIn</a>

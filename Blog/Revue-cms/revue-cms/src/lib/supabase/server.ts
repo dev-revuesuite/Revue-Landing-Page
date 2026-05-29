@@ -26,6 +26,20 @@ export async function createClient() {
 }
 
 /**
+ * Anon client without cookies — for build-time static generation (generateStaticParams).
+ * Uses the public anon key so RLS still applies; safe outside request scope.
+ */
+export function createAnonClient() {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: { getAll() { return []; }, setAll() {} },
+    }
+  );
+}
+
+/**
  * Service-role client — for trusted server-only operations
  * (sitemap, RSS, etc.). NEVER expose to the browser.
  */

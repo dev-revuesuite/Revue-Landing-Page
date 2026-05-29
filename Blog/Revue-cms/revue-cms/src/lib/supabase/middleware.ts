@@ -1,11 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
-import {
-  CMS_ACCESS_DENIED_MESSAGE,
-  CMS_NOT_CONFIGURED_MESSAGE,
-  getAllowedCmsEmail,
-  isAllowedCmsEmail,
-} from '@/lib/cms-auth';
+import { getAllowedCmsEmail, isAllowedCmsEmail } from '@/lib/cms-auth';
+import { loginErrorPath } from '@/lib/login-errors';
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -48,7 +44,8 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       url.searchParams.delete('next');
-      url.searchParams.set('error', CMS_NOT_CONFIGURED_MESSAGE);
+      url.searchParams.delete('error');
+      url.searchParams.set('code', 'not_configured');
       return NextResponse.redirect(url);
     }
 
@@ -57,7 +54,8 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = '/login';
       url.searchParams.delete('next');
-      url.searchParams.set('error', CMS_ACCESS_DENIED_MESSAGE);
+      url.searchParams.delete('error');
+      url.searchParams.set('code', 'access_denied');
       return NextResponse.redirect(url);
     }
   }

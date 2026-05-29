@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NewsletterCTA } from '@/components/site/cta';
 import { AuthorAvatar } from '@/components/site/brand-mark';
 import { buildMetadata } from '@/lib/seo';
-import { formatDate } from '@/lib/utils';
+import { formatDate, featuredImageAlt } from '@/lib/utils';
 import { Search } from 'lucide-react';
 
 export const revalidate = 60;
@@ -17,6 +17,14 @@ export const metadata = buildMetadata({
 });
 
 interface SearchParams { q?: string; page?: string; category?: string }
+
+function buildBlogHref(page: number, params: { category?: string; q?: string }) {
+  const search = new URLSearchParams();
+  search.set('page', String(page));
+  if (params.category) search.set('category', params.category);
+  if (params.q) search.set('q', params.q);
+  return `/blog?${search.toString()}`;
+}
 
 export default async function BlogIndex({
   searchParams,
@@ -113,7 +121,7 @@ export default async function BlogIndex({
               {featured.featured_image ? (
                 <Image
                   src={featured.featured_image}
-                  alt={featured.title}
+                  alt={featuredImageAlt(featured.title, featured.excerpt)}
                   fill
                   sizes="(min-width: 768px) 55vw, 100vw"
                   className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
@@ -155,7 +163,7 @@ export default async function BlogIndex({
         <div className="mb-7 flex items-baseline justify-between">
           <h3 className="headline-serif text-[22px]">Latest stories</h3>
           {totalPages > 1 && (
-            <Link href={`/blog?page=2${sp.category ? `&category=${sp.category}` : ''}`} className="text-[13px] font-medium text-brand">
+            <Link href={buildBlogHref(2, { category: sp.category })} className="text-[13px] font-medium text-brand">
               View all →
             </Link>
           )}
@@ -172,7 +180,7 @@ export default async function BlogIndex({
                     {post.featured_image ? (
                       <Image
                         src={post.featured_image}
-                        alt={post.title}
+                        alt={featuredImageAlt(post.title, post.excerpt)}
                         fill
                         sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
@@ -203,7 +211,7 @@ export default async function BlogIndex({
           <nav className="mt-16 flex items-center justify-center gap-4">
             {page > 1 && (
               <Link
-                href={`/blog?page=${page - 1}${sp.category ? `&category=${sp.category}` : ''}${sp.q ? `&q=${sp.q}` : ''}`}
+                href={buildBlogHref(page - 1, { category: sp.category, q: sp.q })}
                 className="btn-mock-light"
               >
                 ← Previous
@@ -212,7 +220,7 @@ export default async function BlogIndex({
             <span className="text-sm text-stone">Page {page} of {totalPages}</span>
             {page < totalPages && (
               <Link
-                href={`/blog?page=${page + 1}${sp.category ? `&category=${sp.category}` : ''}${sp.q ? `&q=${sp.q}` : ''}`}
+                href={buildBlogHref(page + 1, { category: sp.category, q: sp.q })}
                 className="btn-mock-light"
               >
                 Next →

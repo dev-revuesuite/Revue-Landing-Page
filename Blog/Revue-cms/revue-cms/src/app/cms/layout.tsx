@@ -1,10 +1,6 @@
 import { redirect } from 'next/navigation';
-import {
-  CMS_ACCESS_DENIED_MESSAGE,
-  CMS_NOT_CONFIGURED_MESSAGE,
-  getAllowedCmsEmail,
-  isAllowedCmsEmail,
-} from '@/lib/cms-auth';
+import { getAllowedCmsEmail, isAllowedCmsEmail } from '@/lib/cms-auth';
+import { loginErrorPath } from '@/lib/login-errors';
 import { createClient } from '@/lib/supabase/server';
 import { CmsSidebar } from '@/components/cms/sidebar';
 
@@ -15,12 +11,12 @@ export default async function CmsLayout({ children }: { children: React.ReactNod
 
   if (!getAllowedCmsEmail()) {
     await supabase.auth.signOut();
-    redirect(`/login?error=${encodeURIComponent(CMS_NOT_CONFIGURED_MESSAGE)}`);
+    redirect(loginErrorPath('not_configured'));
   }
 
   if (!isAllowedCmsEmail(user.email)) {
     await supabase.auth.signOut();
-    redirect(`/login?error=${encodeURIComponent(CMS_ACCESS_DENIED_MESSAGE)}`);
+    redirect(loginErrorPath('access_denied'));
   }
 
   const { data: profile } = await supabase

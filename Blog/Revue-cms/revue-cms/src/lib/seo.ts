@@ -67,7 +67,7 @@ export function articleJsonLd(post: Post, author?: Author | null, category?: Cat
     publisher: {
       '@type': 'Organization',
       name: 'Revue',
-      logo: { '@type': 'ImageObject', url: absoluteUrl('/logo.png') },
+      logo: { '@type': 'ImageObject', url: absoluteUrl('/logo.webp') },
     },
     mainEntityOfPage: { '@type': 'WebPage', '@id': absoluteUrl(`/blog/${post.slug}`) },
     articleSection: category?.name,
@@ -105,8 +105,8 @@ export function organizationJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     name: 'Revue',
-    url: 'https://revuesuite.com',
-    logo: absoluteUrl('/logo.png'),
+    url: absoluteUrl('/'),
+    logo: absoluteUrl('/logo.webp'),
     sameAs: ['https://twitter.com/revuesuite', 'https://linkedin.com/company/revuesuite'],
   };
 }

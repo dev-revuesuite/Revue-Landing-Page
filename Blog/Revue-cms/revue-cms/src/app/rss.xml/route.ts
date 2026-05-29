@@ -1,5 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/server';
-import { absoluteUrl, escapeXml, stripHtml } from '@/lib/utils';
+import { absoluteUrl, escapeCdata, escapeXml, stripHtml } from '@/lib/utils';
 
 export const revalidate = 600; // 10 min
 
@@ -27,7 +27,7 @@ export async function GET() {
       <pubDate>${p.published_at ? new Date(p.published_at).toUTCString() : ''}</pubDate>
       <dc:creator>${escapeXml(authorMap.get(p.author_id!) || 'Revue')}</dc:creator>
       <description>${escapeXml(p.excerpt || stripHtml(p.content_html || ''))}</description>
-      <content:encoded><![CDATA[${p.content_html || ''}]]></content:encoded>
+      <content:encoded><![CDATA[${escapeCdata(p.content_html || '')}]]></content:encoded>
     </item>`).join('');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

@@ -15,7 +15,7 @@ function toSlug(str: string) {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-');
 }
-import { Trash2, Plus, ImagePlus, Eye } from 'lucide-react';
+import { Trash2, Plus, ImagePlus, Eye, Loader2 } from 'lucide-react';
 import { uploadMediaFile } from '@/app/cms/media/actions';
 import Link from 'next/link';
 import type { Post, Category, Tag, Author } from '@/lib/supabase/database.types';
@@ -61,23 +61,29 @@ export function PostEditor({ post, categories, tags, authors, selectedTagIds: in
   const [isPending, start] = useTransition();
   const [tab, setTab] = useState<'content' | 'seo' | 'faqs' | 'settings'>('content');
 
+  const [uploading, setUploading] = useState<'cover' | 'og' | null>(null);
+  const [uploadError, setUploadError] = useState<{ kind: 'cover' | 'og'; message: string } | null>(null);
+
   // Auto-slug from title until manually edited
   useEffect(() => {
     if (!slugTouched && title) setSlug(toSlug(title));
   }, [title, slugTouched]);
 
-  const onUpload = async (cb: (url: string) => void) => {
+  const onUpload = (kind: 'cover' | 'og', cb: (url: string) => void) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
+      setUploading(kind);
+      setUploadError(null);
       const fd = new FormData();
       fd.set('file', file);
       const res = await uploadMediaFile(fd);
+      setUploading(null);
       if (res.error) {
-        alert(res.error);
+        setUploadError({ kind, message: res.error });
         return;
       }
       if (res.row?.url) cb(res.row.url);
@@ -211,10 +217,34 @@ export function PostEditor({ post, categories, tags, authors, selectedTagIds: in
                 <Label>Open Graph image</Label>
                 <div className="mt-1 flex gap-2">
                   <Input value={ogImage} onChange={(e) => setOgImage(e.target.value)} placeholder="https://…" />
-                  <Button type="button" variant="outline" onClick={() => onUpload(setOgImage)}>
-                    <ImagePlus className="h-4 w-4" />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onUpload('og', setOgImage)}
+                    disabled={uploading !== null}
+                  >
+                    {uploading === 'og' ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <ImagePlus className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
+                {uploading === 'og' && (
+                  <p className="mt-1 text-xs text-muted-foreground">Uploading…</p>
+                )}
+                {uploadError?.kind === 'og' && (
+                  <p className="mt-1 text-xs text-red-600">
+                    Upload failed: {uploadError.message}{' '}
+                    <button
+                      type="button"
+                      onClick={() => setUploadError(null)}
+                      className="underline hover:text-red-800"
+                    >
+                      Dismiss
+                    </button>
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -337,14 +367,54 @@ export function PostEditor({ post, categories, tags, authors, selectedTagIds: in
               <div className="space-y-2">
                 <img src={featuredImage} alt="" className="w-full rounded-md object-cover" />
                 <div className="flex gap-2">
-                  <Button type="button" variant="outline" size="sm" onClick={() => onUpload(setFeaturedImage)}>Replace</Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onUpload('cover', setFeaturedImage)}
+                    disabled={uploading !== null}
+                  >
+                    {uploading === 'cover' ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+                      </>
+                    ) : (
+                      'Replace'
+                    )}
+                  </Button>
                   <Button type="button" variant="ghost" size="sm" onClick={() => setFeaturedImage('')}>Remove</Button>
                 </div>
               </div>
             ) : (
-              <Button type="button" variant="outline" className="w-full" onClick={() => onUpload(setFeaturedImage)}>
-                <ImagePlus className="h-4 w-4" /> Upload image
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => onUpload('cover', setFeaturedImage)}
+                disabled={uploading !== null}
+              >
+                {uploading === 'cover' ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" /> Uploading…
+                  </>
+                ) : (
+                  <>
+                    <ImagePlus className="h-4 w-4" /> Upload image
+                  </>
+                )}
               </Button>
+            )}
+            {uploadError?.kind === 'cover' && (
+              <p className="mt-2 text-xs text-red-600">
+                Upload failed: {uploadError.message}{' '}
+                <button
+                  type="button"
+                  onClick={() => setUploadError(null)}
+                  className="underline hover:text-red-800"
+                >
+                  Dismiss
+                </button>
+              </p>
             )}
           </CardContent>
         </Card>

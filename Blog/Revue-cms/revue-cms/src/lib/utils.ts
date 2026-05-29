@@ -53,3 +53,15 @@ export function stripHtml(html: string, max = 200) {
   const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
   return text.length > max ? text.slice(0, max).trimEnd() + '…' : text;
 }
+
+/** Escape content embedded in XML CDATA (handles literal ]]> sequences). */
+export function escapeCdata(str: string) {
+  return str.replace(/]]>/g, ']]]]><![CDATA[>');
+}
+
+/** Alt text for featured / card images — prefer excerpt over repeating the title. */
+export function featuredImageAlt(title: string, excerpt?: string | null) {
+  const trimmed = excerpt?.trim();
+  if (trimmed) return trimmed;
+  return `Illustration for ${title}`;
+}
