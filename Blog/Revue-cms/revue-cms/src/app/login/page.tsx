@@ -79,8 +79,8 @@ export default async function LoginPage({
 
           <p className="mt-6 text-xs text-muted-foreground">
             By signing in you agree to our{' '}
-            <a className="underline" href="https://revuesuite.com/terms">terms</a> and{' '}
-            <a className="underline" href="https://revuesuite.com/privacy">privacy policy</a>.
+            <a className="underline" href="https://revuesuite.com/assets/Revue%20Terms%20And%20Conditions%20Draft.pdf" target="_blank" rel="noopener noreferrer">terms</a> and{' '}
+            <a className="underline" href="https://revuesuite.com/assets/Revue%20Privacy%20Policy%20Draft.pdf" target="_blank" rel="noopener noreferrer">privacy policy</a>.
           </p>
         </div>
       </div>
