@@ -17,6 +17,7 @@ function toSlug(str: string) {
 }
 import { Trash2, Plus, ImagePlus, Eye, Loader2 } from 'lucide-react';
 import { uploadMediaFile } from '@/app/cms/media/actions';
+import { validateImageFile } from '@/lib/upload-limits';
 import Link from 'next/link';
 import type { Post, Category, Tag, Author } from '@/lib/supabase/database.types';
 
@@ -76,17 +77,32 @@ export function PostEditor({ post, categories, tags, authors, selectedTagIds: in
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return;
-      setUploading(kind);
-      setUploadError(null);
-      const fd = new FormData();
-      fd.set('file', file);
-      const res = await uploadMediaFile(fd);
-      setUploading(null);
-      if (res.error) {
-        setUploadError({ kind, message: res.error });
+
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        setUploadError({ kind, message: validationError });
         return;
       }
-      if (res.row?.url) cb(res.row.url);
+
+      setUploading(kind);
+      setUploadError(null);
+      try {
+        const fd = new FormData();
+        fd.set('file', file);
+        const res = await uploadMediaFile(fd);
+        if (res.error) {
+          setUploadError({ kind, message: res.error });
+          return;
+        }
+        if (res.row?.url) cb(res.row.url);
+      } catch {
+        setUploadError({
+          kind,
+          message: 'Upload failed — network error or session expired. Refresh the page and try again.',
+        });
+      } finally {
+        setUploading(null);
+      }
     };
     input.click();
   };

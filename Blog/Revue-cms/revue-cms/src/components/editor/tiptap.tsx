@@ -19,6 +19,7 @@ import {
   Image as ImageIcon, Table as TableIcon, Minus, Undo, Redo, Youtube as YoutubeIcon, Loader2,
 } from 'lucide-react';
 import { uploadMediaFile } from '@/app/cms/media/actions';
+import { validateImageFile } from '@/lib/upload-limits';
 
 const lowlight = createLowlight(common);
 
@@ -57,17 +58,26 @@ export function TiptapEditor({ initialContent, onChange }: Props) {
     const el = editor.view.dom;
     const onDrop = async (e: DragEvent) => {
       const file = e.dataTransfer?.files?.[0];
-      if (!file || !file.type.startsWith('image/')) return;
+      if (!file) return;
+      const validationError = validateImageFile(file);
+      if (validationError) {
+        e.preventDefault();
+        setUploadError(validationError);
+        return;
+      }
       e.preventDefault();
       setUploading(true);
       setUploadError(null);
-      const url = await uploadImageRaw(file);
-      setUploading(false);
-      if (!url) {
-        setUploadError('Upload failed. Try a smaller image (under 4 MB) or check your connection.');
-        return;
+      try {
+        const url = await uploadImageRaw(file);
+        if (!url) {
+          setUploadError('Upload failed. Try a smaller image (under 4 MB) or check your connection.');
+          return;
+        }
+        editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+      } finally {
+        setUploading(false);
       }
-      editor.chain().focus().setImage({ src: url, alt: file.name }).run();
     };
     el.addEventListener('drop', onDrop);
     return () => el.removeEventListener('drop', onDrop);
@@ -78,16 +88,27 @@ export function TiptapEditor({ initialContent, onChange }: Props) {
   const onPickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    setUploadError(null);
-    const url = await uploadImageRaw(file);
-    setUploading(false);
-    e.target.value = '';
-    if (!url) {
-      setUploadError('Upload failed. Try a smaller image (under 4 MB) or check your connection.');
+
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setUploadError(validationError);
+      e.target.value = '';
       return;
     }
-    editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const url = await uploadImageRaw(file);
+      if (!url) {
+        setUploadError('Upload failed. Try a smaller image (under 4 MB) or check your connection.');
+        return;
+      }
+      editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
   };
 
   return (
@@ -235,9 +256,13 @@ function Toolbar({
 // ---------- Image upload (server action — uses CMS session cookies) ----------
 /** Returns null on error; caller is expected to surface the error via UI. */
 async function uploadImageRaw(file: File): Promise<string | null> {
-  const fd = new FormData();
-  fd.set('file', file);
-  const res = await uploadMediaFile(fd);
-  if (res.error) return null;
-  return res.row?.url ?? null;
+  try {
+    const fd = new FormData();
+    fd.set('file', file);
+    const res = await uploadMediaFile(fd);
+    if (res.error) return null;
+    return res.row?.url ?? null;
+  } catch {
+    return null;
+  }
 }

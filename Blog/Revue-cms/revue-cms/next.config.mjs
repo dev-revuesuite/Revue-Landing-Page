@@ -8,6 +8,10 @@ const nextConfig = {
   },
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
+    serverActions: {
+      // Default is 1MB — large featured images silently fail without this.
+      bodySizeLimit: '4mb',
+    },
   },
 };
 

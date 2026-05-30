@@ -6,6 +6,7 @@ import { Upload, X, Trash2, Copy, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { uploadMediaFile, updateMediaAlt, deleteMedia } from "./actions";
+import { validateImageFile } from "@/lib/upload-limits";
 import type { Media } from "@/lib/supabase/database.types";
 
 export function MediaLibrary({ initialMedia }: { initialMedia: Media[] }) {
@@ -30,25 +31,37 @@ export function MediaLibrary({ initialMedia }: { initialMedia: Media[] }) {
     const newOnes: Media[] = [];
     const errors: string[] = [];
 
-    for (const file of Array.from(files)) {
-      const fd = new FormData();
-      fd.set("file", file);
-      const res = await uploadMediaFile(fd);
-      if (res.row) {
-        newOnes.push(res.row);
-      } else if (res.error) {
-        errors.push(`${file.name}: ${res.error}`);
-      }
-    }
+    try {
+      for (const file of Array.from(files)) {
+        const validationError = validateImageFile(file);
+        if (validationError) {
+          errors.push(`${file.name}: ${validationError}`);
+          continue;
+        }
 
-    if (errors.length) {
-      setUploadError(errors.join(" · "));
+        const fd = new FormData();
+        fd.set("file", file);
+        try {
+          const res = await uploadMediaFile(fd);
+          if (res.row) {
+            newOnes.push(res.row);
+          } else if (res.error) {
+            errors.push(`${file.name}: ${res.error}`);
+          }
+        } catch {
+          errors.push(`${file.name}: Upload failed — check connection and try again.`);
+        }
+      }
+    } finally {
+      if (errors.length) {
+        setUploadError(errors.join(" · "));
+      }
+      if (newOnes.length) {
+        setMedia((prev) => [...newOnes, ...prev]);
+      }
+      setUploading(false);
+      if (fileInput.current) fileInput.current.value = "";
     }
-    if (newOnes.length) {
-      setMedia((prev) => [...newOnes, ...prev]);
-    }
-    setUploading(false);
-    if (fileInput.current) fileInput.current.value = "";
   }
 
   function handleAltSave(id: string, alt: string) {
