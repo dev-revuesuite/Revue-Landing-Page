@@ -11,6 +11,8 @@ export interface SheetRow {
   category: string;
   tags: string;
   notes: string;
+  /** Per-article instructions from the sheet — combined with the fixed system prompt. */
+  prompt: string;
   /** Public HTTPS URL to the featured image (CEO fills this in the sheet). */
   imageUrl: string;
 }
@@ -69,6 +71,7 @@ export interface ContentJobRow {
   category: string | null;
   tags: string | null;
   notes: string | null;
+  prompt: string | null;
   image_url: string | null;
   status: 'pending' | 'processing' | 'done' | 'failed';
   attempts: number;

@@ -1,5 +1,6 @@
 import 'server-only';
 import { createServiceClient } from '@/lib/supabase/server';
+import { absoluteUrl } from '@/lib/utils';
 import { generateArticle } from './generate';
 import { importFeaturedImageFromSheet } from './images';
 import { publishGeneratedPost } from './publish';
@@ -35,7 +36,10 @@ function allowedPublishCountByNow(dailyTarget: number): number {
   const now = new Date();
   const secondsSinceMidnight =
     now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds();
-  return Math.floor((secondsSinceMidnight / 86400) * dailyTarget);
+  return Math.min(
+    dailyTarget,
+    Math.ceil((secondsSinceMidnight / 86400) * dailyTarget),
+  );
 }
 
 function jobToSheetRow(job: ContentJobRow): SheetRow {
@@ -47,6 +51,7 @@ function jobToSheetRow(job: ContentJobRow): SheetRow {
     category: job.category ?? '',
     tags: job.tags ?? '',
     notes: job.notes ?? '',
+    prompt: job.prompt ?? '',
     imageUrl: job.image_url ?? '',
   };
 }
@@ -94,6 +99,7 @@ async function syncSheetToLedger(): Promise<number> {
         category: row.category || null,
         tags: row.tags || null,
         notes: row.notes || null,
+        prompt: row.prompt || null,
         image_url: row.imageUrl || null,
         status: 'pending',
       });
@@ -111,6 +117,7 @@ async function syncSheetToLedger(): Promise<number> {
           category: row.category || null,
           tags: row.tags || null,
           notes: row.notes || null,
+          prompt: row.prompt || null,
           image_url: row.imageUrl || null,
         })
         .eq('id', existing.id);
@@ -131,10 +138,59 @@ async function countPublishedToday(): Promise<number> {
   return count ?? 0;
 }
 
+async function finalizePublishedJob(
+  job: ContentJobRow,
+  published: { postId: string; url: string },
+): Promise<void> {
+  const supabase = createServiceClient();
+
+  const { error: updateErr } = await supabase
+    .from('content_jobs')
+    .update({
+      status: 'done',
+      post_id: published.postId,
+      post_url: published.url,
+      completed_at: new Date().toISOString(),
+      error: null,
+    })
+    .eq('id', job.id);
+
+  if (updateErr) throw new Error(`Ledger update failed: ${updateErr.message}`);
+
+  if (job.sheet_row) {
+    await writeBackStatus({
+      sheetRow: job.sheet_row,
+      status: 'published',
+      postUrl: published.url,
+    });
+  }
+}
+
 async function processJob(
   job: ContentJobRow,
 ): Promise<{ outcome: 'published' | 'retry' | 'failed'; error?: string }> {
   const supabase = createServiceClient();
+
+  // Resume after a prior publish succeeded but finalization did not finish.
+  if (job.post_id) {
+    try {
+      let url = job.post_url?.trim() ?? '';
+      if (!url) {
+        const { data: post } = await supabase
+          .from('posts')
+          .select('slug')
+          .eq('id', job.post_id)
+          .maybeSingle();
+        if (!post) throw new Error('Linked post no longer exists');
+        url = absoluteUrl(`/blog/${post.slug}`);
+      }
+      await finalizePublishedJob(job, { postId: job.post_id, url });
+      return { outcome: 'published' };
+    } catch (err) {
+      const message = (err instanceof Error ? err.message : String(err)).slice(0, 500);
+      return { outcome: 'retry', error: message };
+    }
+  }
 
   if (job.sheet_row) {
     await writeBackStatus({ sheetRow: job.sheet_row, status: 'processing' });
@@ -154,6 +210,7 @@ async function processJob(
       slug: article.slug,
       title: article.title,
       excerpt: article.excerpt,
+      storageKey: job.id,
     });
 
     const published = await publishGeneratedPost({
@@ -164,26 +221,18 @@ async function processJob(
       featuredImageUrl: image?.url ?? null,
     });
 
-    const { error: updateErr } = await supabase
+    // Persist post link before marking done so retries cannot create duplicates.
+    const { error: linkErr } = await supabase
       .from('content_jobs')
       .update({
-        status: 'done',
         post_id: published.postId,
         post_url: published.url,
-        completed_at: new Date().toISOString(),
-        error: null,
       })
       .eq('id', job.id);
 
-    if (updateErr) throw new Error(`Ledger update failed: ${updateErr.message}`);
+    if (linkErr) throw new Error(`Ledger link failed: ${linkErr.message}`);
 
-    if (job.sheet_row) {
-      await writeBackStatus({
-        sheetRow: job.sheet_row,
-        status: 'published',
-        postUrl: published.url,
-      });
-    }
+    await finalizePublishedJob(job, published);
 
     return { outcome: 'published' };
   } catch (err) {

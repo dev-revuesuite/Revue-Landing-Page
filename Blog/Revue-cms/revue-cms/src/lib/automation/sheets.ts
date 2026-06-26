@@ -59,6 +59,7 @@ function normalizeRow(raw: Record<string, unknown>): SheetRow | null {
     category: String(raw.category ?? '').trim(),
     tags: String(raw.tags ?? '').trim(),
     notes: String(raw.notes ?? '').trim(),
+    prompt: String(raw.prompt ?? '').trim(),
     imageUrl: String(raw.image_url ?? raw.imageUrl ?? '').trim(),
   };
 }

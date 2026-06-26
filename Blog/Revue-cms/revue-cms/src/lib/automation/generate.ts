@@ -11,7 +11,7 @@ import type { SheetRow, GeneratedArticle } from './types';
  */
 
 const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash-lite';
-const GENERATION_TIMEOUT_MS = 90_000;
+const GENERATION_TIMEOUT_MS = 50_000;
 const IN_CALL_RETRIES = 2;
 const MAX_OUTPUT_TOKENS = 16384;
 
@@ -96,7 +96,11 @@ function buildPrompt(row: SheetRow): string {
     `TARGET KEYWORDS: ${row.keywords || '(none provided — infer sensible ones)'}`,
     `CATEGORY: ${row.category || '(choose a fitting one)'}`,
     `SUGGESTED TAGS: ${row.tags || '(infer 3–6 relevant tags)'}`,
-    `EXTRA INSTRUCTIONS: ${row.notes || '(none)'}`,
+    '',
+    'ARTICLE PROMPT (from the editor — follow closely):',
+    row.prompt.trim() || '(none — rely on title, keywords, and default structure below)',
+    '',
+    `ADDITIONAL NOTES: ${row.notes || '(none)'}`,
     '',
     'VOICE & STYLE (match closely):',
     '- Direct, confident, lightly contrarian. Plain English, no corporate jargon, no fake statistics.',

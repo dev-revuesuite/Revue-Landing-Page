@@ -2,6 +2,7 @@ import { timingSafeEqual } from 'crypto';
 import { runAutomationTick } from '@/lib/automation/worker';
 
 export const runtime = 'nodejs';
+/** Vercel Hobby hard limit is 60s — cannot raise further without upgrading the plan. */
 export const maxDuration = 60;
 
 function verifyCronAuth(request: Request): boolean {
