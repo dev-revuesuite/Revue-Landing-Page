@@ -1,8 +1,10 @@
 {
     "version": 2,
     "rewrites": [
-        { "source": "/qc-tool", "destination": "/revue-landing-page.html" },
-        { "source": "/qc-tool/", "destination": "/revue-landing-page.html" },
+        { "source": "/qc-tool", "destination": "https://test-revue.vercel.app/qc-tool" },
+        { "source": "/qc-tool/:path*", "destination": "https://test-revue.vercel.app/qc-tool/:path*" },
+        { "source": "/QC-Tool", "destination": "https://test-revue.vercel.app/qc-tool" },
+        { "source": "/QC-Tool/:path*", "destination": "https://test-revue.vercel.app/qc-tool/:path*" },
 
         { "source": "/privacy", "destination": "/privacy.html" },
         { "source": "/terms", "destination": "/terms.html" },
