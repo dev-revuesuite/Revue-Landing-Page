@@ -414,35 +414,19 @@ export async function runReclaimTick(): Promise<ReclaimResult> {
       continue;
     }
 
-    const attempts = job.attempts + 1;
-    const exhausted = attempts >= job.max_attempts;
+    // Vercel timeout — retry without burning an attempt (infra, not content failure).
     const idleStep = idleStepAfterFailure(job.step);
-
     await supabase
       .from('content_jobs')
       .update({
-        step: exhausted ? 'failed' : idleStep,
-        status: exhausted ? 'failed' : 'pending',
-        attempts,
-        error: exhausted
-          ? `Step "${job.step}" timed out after ${staleMinutes}m`
-          : `Step "${job.step}" interrupted — will retry`,
+        step: idleStep,
+        status: 'pending',
+        attempts: job.attempts,
+        error: `Step "${job.step}" interrupted after ${staleMinutes}m — will retry`,
         claimed_at: null,
       })
       .eq('id', job.id);
-
-    if (exhausted) {
-      failed++;
-      if (job.sheet_row) {
-        await writeBackStatus({
-          sheetRow: job.sheet_row,
-          status: 'failed',
-          error: `Timed out during ${job.step}`,
-        });
-      }
-    } else {
-      reclaimed++;
-    }
+    reclaimed++;
   }
 
   return { reclaimed, failed };
@@ -458,20 +442,10 @@ export async function runAutomationTick(): Promise<TickResult> {
   const publishedToday = await countPublishedToday();
 
   const capRemaining = Math.max(0, dailyCap - publishedToday);
-  if (capRemaining <= 0) {
-    return {
-      synced,
-      claimed: 0,
-      published: 0,
-      retried: 0,
-      failed: 0,
-      skippedReason: `Daily cap reached (${dailyCap})`,
-    };
-  }
-
   const allowedNow = allowedPublishCountByNow(dailyTarget);
   const dripRemaining = Math.max(0, allowedNow - publishedToday);
-  const allowNew = dripRemaining > 0;
+  // Drip/cap only gate NEW generates — in-flight image/publish steps always run.
+  const allowNew = dripRemaining > 0 && capRemaining > 0;
 
   const supabase = createServiceClient();
   const { data: jobs, error: claimErr } = await supabase.rpc('claim_next_pipeline_job', {
@@ -484,19 +458,35 @@ export async function runAutomationTick(): Promise<TickResult> {
 
   const claimed = (jobs ?? []) as ContentJobRow[];
   if (!claimed.length) {
+    const skippedReason =
+      capRemaining <= 0 && !allowNew
+        ? `Daily cap reached (${dailyCap})`
+        : allowNew
+          ? 'No pipeline jobs ready'
+          : 'Drip pacing — no new articles; pipeline may still advance on next ticks';
     return {
       synced,
       claimed: 0,
       published: 0,
       retried: 0,
       failed: 0,
-      skippedReason: allowNew
-        ? 'No pipeline jobs ready'
-        : 'Drip pacing — no new articles; pipeline may still advance on next ticks',
+      skippedReason,
     };
   }
 
   const job = claimed[0];
+
+  if (job.step === 'publishing' && capRemaining <= 0) {
+    await markStepIdle(job.id, 'image_ready');
+    return {
+      synced,
+      claimed: 0,
+      published: 0,
+      retried: 0,
+      failed: 0,
+      skippedReason: `Daily cap reached (${dailyCap}) — publish deferred`,
+    };
+  }
   const alertFailures: FailureAlert[] = [];
   let published = 0;
   let retried = 0;
