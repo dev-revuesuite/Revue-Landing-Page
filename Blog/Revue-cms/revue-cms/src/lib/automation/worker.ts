@@ -443,9 +443,8 @@ export async function runAutomationTick(): Promise<TickResult> {
 
   const capRemaining = Math.max(0, dailyCap - publishedToday);
   const allowedNow = allowedPublishCountByNow(dailyTarget);
-  const dripRemaining = Math.max(0, allowedNow - publishedToday);
-  // Drip/cap only gate NEW generates — in-flight image/publish steps always run.
-  const allowNew = dripRemaining > 0 && capRemaining > 0;
+  // Drip paces PUBLISHES through the day — never block generate/image (pipeline must keep moving).
+  const allowNew = capRemaining > 0;
 
   const supabase = createServiceClient();
   const { data: jobs, error: claimErr } = await supabase.rpc('claim_next_pipeline_job', {
@@ -458,34 +457,43 @@ export async function runAutomationTick(): Promise<TickResult> {
 
   const claimed = (jobs ?? []) as ContentJobRow[];
   if (!claimed.length) {
-    const skippedReason =
-      capRemaining <= 0 && !allowNew
-        ? `Daily cap reached (${dailyCap})`
-        : allowNew
-          ? 'No pipeline jobs ready'
-          : 'Drip pacing — no new articles; pipeline may still advance on next ticks';
     return {
       synced,
       claimed: 0,
       published: 0,
       retried: 0,
       failed: 0,
-      skippedReason,
+      skippedReason: capRemaining <= 0
+        ? `Daily cap reached (${dailyCap})`
+        : 'No pipeline jobs ready',
     };
   }
 
   const job = claimed[0];
 
-  if (job.step === 'publishing' && capRemaining <= 0) {
-    await markStepIdle(job.id, 'image_ready');
-    return {
-      synced,
-      claimed: 0,
-      published: 0,
-      retried: 0,
-      failed: 0,
-      skippedReason: `Daily cap reached (${dailyCap}) — publish deferred`,
-    };
+  if (job.step === 'publishing') {
+    if (capRemaining <= 0) {
+      await markStepIdle(job.id, 'image_ready');
+      return {
+        synced,
+        claimed: 0,
+        published: 0,
+        retried: 0,
+        failed: 0,
+        skippedReason: `Daily cap reached (${dailyCap}) — publish deferred`,
+      };
+    }
+    if (publishedToday >= allowedNow) {
+      await markStepIdle(job.id, 'image_ready');
+      return {
+        synced,
+        claimed: 0,
+        published: 0,
+        retried: 0,
+        failed: 0,
+        skippedReason: `Drip pacing — ${publishedToday}/${allowedNow} publishes allowed by now (target ${dailyTarget}/day)`,
+      };
+    }
   }
   const alertFailures: FailureAlert[] = [];
   let published = 0;
