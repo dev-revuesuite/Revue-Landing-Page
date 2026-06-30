@@ -1,30 +1,29 @@
 import { verifyCronAuth } from '@/lib/automation/cron-auth';
-import { runAutomationTick } from '@/lib/automation/worker';
+import { runReclaimTick } from '@/lib/automation/worker';
 
 export const runtime = 'nodejs';
-/** Vercel Hobby hard limit is 60s — each pipeline step targets well under this. */
-export const maxDuration = 60;
+export const maxDuration = 30;
 
-async function handleTick(request: Request) {
+async function handleReclaim(request: Request) {
   if (!verifyCronAuth(request)) {
     return Response.json({ success: false, error: 'unauthorized' }, { status: 401 });
   }
 
   try {
-    const result = await runAutomationTick();
+    const result = await runReclaimTick();
     return Response.json({ success: true, ...result });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    console.error('[automation] tick failed:', message);
+    console.error('[automation] reclaim failed:', message);
     return Response.json({ success: false, error: message }, { status: 500 });
   }
 }
 
-/** Main pipeline cron — one step per tick (generate, image, or publish). */
+/** Lightweight watchdog — resets jobs stuck after a Vercel timeout. Run every 5 min. */
 export async function POST(request: Request) {
-  return handleTick(request);
+  return handleReclaim(request);
 }
 
 export async function GET(request: Request) {
-  return handleTick(request);
+  return handleReclaim(request);
 }

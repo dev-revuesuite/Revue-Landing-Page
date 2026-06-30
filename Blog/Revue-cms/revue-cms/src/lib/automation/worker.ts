@@ -10,17 +10,31 @@ import {
   sendFailureAlert,
   writeBackStatus,
 } from './sheets';
-import type { ContentJobRow, FailureAlert, SheetRow } from './types';
+import type {
+  ContentJobRow,
+  FailureAlert,
+  JobDraft,
+  PipelineStep,
+  SheetRow,
+} from './types';
 
 /** Summary returned by each cron tick (for logs / debugging). */
 export interface TickResult {
   synced: number;
   claimed: number;
+  step?: PipelineStep | null;
   published: number;
   retried: number;
   failed: number;
   skippedReason?: string;
 }
+
+export interface ReclaimResult {
+  reclaimed: number;
+  failed: number;
+}
+
+const ACTIVE_STEPS: PipelineStep[] = ['generating', 'imaging', 'publishing'];
 
 function envInt(name: string, fallback: number): number {
   const parsed = Number.parseInt(process.env[name] ?? '', 10);
@@ -56,15 +70,29 @@ function jobToSheetRow(job: ContentJobRow): SheetRow {
   };
 }
 
-/** Reset jobs stuck in `processing` (e.g. after a crashed serverless invocation). */
-async function reclaimStaleProcessingJobs(): Promise<void> {
-  const supabase = createServiceClient();
-  const cutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
-  await supabase
-    .from('content_jobs')
-    .update({ status: 'pending' })
-    .eq('status', 'processing')
-    .lt('claimed_at', cutoff);
+function parseJobDraft(job: ContentJobRow): JobDraft {
+  const raw = job.draft_json;
+  if (!raw || typeof raw !== 'object') {
+    throw new Error('Missing draft — regenerate from pending');
+  }
+  const draft = raw as JobDraft;
+  if (!draft.article || !draft.contentHtml) {
+    throw new Error('Invalid draft_json on job');
+  }
+  return draft;
+}
+
+function idleStepAfterFailure(activeStep: PipelineStep): PipelineStep {
+  switch (activeStep) {
+    case 'generating':
+      return 'pending';
+    case 'imaging':
+      return 'draft_ready';
+    case 'publishing':
+      return 'image_ready';
+    default:
+      return 'pending';
+  }
 }
 
 async function syncSheetToLedger(): Promise<number> {
@@ -86,7 +114,7 @@ async function syncSheetToLedger(): Promise<number> {
 
     const { data: existing } = await supabase
       .from('content_jobs')
-      .select('id, status')
+      .select('id, step')
       .eq('source_key', row.sourceKey)
       .maybeSingle();
 
@@ -102,12 +130,13 @@ async function syncSheetToLedger(): Promise<number> {
         prompt: row.prompt || null,
         image_url: row.imageUrl || null,
         status: 'pending',
+        step: 'pending',
       });
       if (!error) synced++;
       continue;
     }
 
-    if (existing.status === 'pending') {
+    if (existing.step === 'pending') {
       const { error } = await supabase
         .from('content_jobs')
         .update({
@@ -133,7 +162,7 @@ async function countPublishedToday(): Promise<number> {
   const { count } = await supabase
     .from('content_jobs')
     .select('*', { count: 'exact', head: true })
-    .eq('status', 'done')
+    .eq('step', 'done')
     .gte('completed_at', startOfTodayUtc());
   return count ?? 0;
 }
@@ -148,10 +177,12 @@ async function finalizePublishedJob(
     .from('content_jobs')
     .update({
       status: 'done',
+      step: 'done',
       post_id: published.postId,
       post_url: published.url,
       completed_at: new Date().toISOString(),
       error: null,
+      claimed_at: null,
     })
     .eq('id', job.id);
 
@@ -166,12 +197,126 @@ async function finalizePublishedJob(
   }
 }
 
-async function processJob(
+async function markStepIdle(
+  jobId: string,
+  step: PipelineStep,
+): Promise<void> {
+  const supabase = createServiceClient();
+  await supabase
+    .from('content_jobs')
+    .update({
+      step,
+      status: 'pending',
+      claimed_at: null,
+      error: null,
+    })
+    .eq('id', jobId);
+}
+
+async function handleStepFailure(
   job: ContentJobRow,
-): Promise<{ outcome: 'published' | 'retry' | 'failed'; error?: string }> {
+  activeStep: PipelineStep,
+  message: string,
+): Promise<{ outcome: 'retry' | 'failed' }> {
+  const supabase = createServiceClient();
+  const attempts = job.attempts + 1;
+  const exhausted = attempts >= job.max_attempts;
+  const nextStep: PipelineStep = exhausted ? 'failed' : idleStepAfterFailure(activeStep);
+
+  await supabase
+    .from('content_jobs')
+    .update({
+      step: nextStep,
+      status: exhausted ? 'failed' : 'pending',
+      attempts,
+      error: message,
+      claimed_at: null,
+    })
+    .eq('id', job.id);
+
+  if (exhausted && job.sheet_row) {
+    await writeBackStatus({
+      sheetRow: job.sheet_row,
+      status: 'failed',
+      error: message.slice(0, 200),
+    });
+  }
+
+  return { outcome: exhausted ? 'failed' : 'retry' };
+}
+
+async function runGenerateStep(job: ContentJobRow): Promise<{ outcome: 'advanced' | 'retry' | 'failed'; error?: string }> {
   const supabase = createServiceClient();
 
-  // Resume after a prior publish succeeded but finalization did not finish.
+  if (job.sheet_row) {
+    await writeBackStatus({ sheetRow: job.sheet_row, status: 'processing' });
+  }
+
+  try {
+    const article = await generateArticle(jobToSheetRow(job));
+    const contentHtml = sanitizeArticleHtml(article.content_html);
+
+    if (!hasMeaningfulContent(contentHtml)) {
+      throw new Error('Generated article body is too short or empty after sanitization');
+    }
+
+    const draft: JobDraft = { article, contentHtml };
+    const { error } = await supabase
+      .from('content_jobs')
+      .update({
+        draft_json: draft,
+        step: 'draft_ready',
+        status: 'pending',
+        claimed_at: null,
+        error: null,
+      })
+      .eq('id', job.id);
+
+    if (error) throw new Error(`Draft save failed: ${error.message}`);
+    return { outcome: 'advanced' };
+  } catch (err) {
+    const message = (err instanceof Error ? err.message : String(err)).slice(0, 500);
+    const { outcome } = await handleStepFailure(job, 'generating', message);
+    return { outcome, error: message };
+  }
+}
+
+async function runImageStep(job: ContentJobRow): Promise<{ outcome: 'advanced' | 'retry' | 'failed'; error?: string }> {
+  const supabase = createServiceClient();
+  const draft = parseJobDraft(job);
+
+  try {
+    const image = await importFeaturedImageFromSheet({
+      imageUrl: job.image_url,
+      slug: draft.article.slug,
+      title: draft.article.title,
+      excerpt: draft.article.excerpt,
+      storageKey: job.id,
+    });
+
+    const { error } = await supabase
+      .from('content_jobs')
+      .update({
+        featured_image_url: image?.url ?? null,
+        step: 'image_ready',
+        status: 'pending',
+        claimed_at: null,
+        error: null,
+      })
+      .eq('id', job.id);
+
+    if (error) throw new Error(`Image save failed: ${error.message}`);
+    return { outcome: 'advanced' };
+  } catch (err) {
+    const message = (err instanceof Error ? err.message : String(err)).slice(0, 500);
+    const { outcome } = await handleStepFailure(job, 'imaging', message);
+    return { outcome, error: message };
+  }
+}
+
+async function runPublishStep(job: ContentJobRow): Promise<{ outcome: 'published' | 'retry' | 'failed'; error?: string }> {
+  const supabase = createServiceClient();
+
   if (job.post_id) {
     try {
       let url = job.post_url?.trim() ?? '';
@@ -188,40 +333,22 @@ async function processJob(
       return { outcome: 'published' };
     } catch (err) {
       const message = (err instanceof Error ? err.message : String(err)).slice(0, 500);
-      return { outcome: 'retry', error: message };
+      const { outcome } = await handleStepFailure(job, 'publishing', message);
+      return { outcome, error: message };
     }
   }
 
-  if (job.sheet_row) {
-    await writeBackStatus({ sheetRow: job.sheet_row, status: 'processing' });
-  }
+  const draft = parseJobDraft(job);
 
   try {
-    const sheetRow = jobToSheetRow(job);
-    const article = await generateArticle(sheetRow);
-    const contentHtml = sanitizeArticleHtml(article.content_html);
-
-    if (!hasMeaningfulContent(contentHtml)) {
-      throw new Error('Generated article body is too short or empty after sanitization');
-    }
-
-    const image = await importFeaturedImageFromSheet({
-      imageUrl: job.image_url,
-      slug: article.slug,
-      title: article.title,
-      excerpt: article.excerpt,
-      storageKey: job.id,
-    });
-
     const published = await publishGeneratedPost({
-      article,
-      contentHtml,
+      article: draft.article,
+      contentHtml: draft.contentHtml,
       categoryName: job.category,
       sheetTags: job.tags,
-      featuredImageUrl: image?.url ?? null,
+      featuredImageUrl: job.featured_image_url,
     });
 
-    // Persist post link before marking done so retries cannot create duplicates.
     const { error: linkErr } = await supabase
       .from('content_jobs')
       .update({
@@ -233,44 +360,105 @@ async function processJob(
     if (linkErr) throw new Error(`Ledger link failed: ${linkErr.message}`);
 
     await finalizePublishedJob(job, published);
-
     return { outcome: 'published' };
   } catch (err) {
     const message = (err instanceof Error ? err.message : String(err)).slice(0, 500);
-    const exhausted = job.attempts >= job.max_attempts;
+    const { outcome } = await handleStepFailure(job, 'publishing', message);
+    return { outcome, error: message };
+  }
+}
+
+async function processPipelineStep(
+  job: ContentJobRow,
+): Promise<{ outcome: 'published' | 'advanced' | 'retry' | 'failed'; error?: string }> {
+  switch (job.step) {
+    case 'generating':
+      return runGenerateStep(job);
+    case 'imaging':
+      return runImageStep(job);
+    case 'publishing':
+      return runPublishStep(job);
+    default:
+      throw new Error(`Unexpected pipeline step: ${job.step}`);
+  }
+}
+
+/** Reclaim jobs stuck in an active step after a Vercel timeout. */
+export async function runReclaimTick(): Promise<ReclaimResult> {
+  const supabase = createServiceClient();
+  const staleMinutes = envInt('STALE_PROCESSING_MINUTES', 5);
+  const cutoff = new Date(Date.now() - staleMinutes * 60 * 1000).toISOString();
+
+  const { data: stale } = await supabase
+    .from('content_jobs')
+    .select('*')
+    .in('step', ACTIVE_STEPS)
+    .lt('claimed_at', cutoff);
+
+  if (!stale?.length) return { reclaimed: 0, failed: 0 };
+
+  let reclaimed = 0;
+  let failed = 0;
+
+  for (const job of stale as ContentJobRow[]) {
+    if (job.step === 'publishing' && job.post_id) {
+      const { outcome } = await runPublishStep(job);
+      if (outcome === 'published') reclaimed++;
+      else if (outcome === 'failed') failed++;
+      else reclaimed++;
+      continue;
+    }
+
+    if (job.step === 'generating' && job.draft_json) {
+      await markStepIdle(job.id, 'draft_ready');
+      reclaimed++;
+      continue;
+    }
+
+    const attempts = job.attempts + 1;
+    const exhausted = attempts >= job.max_attempts;
+    const idleStep = idleStepAfterFailure(job.step);
 
     await supabase
       .from('content_jobs')
       .update({
+        step: exhausted ? 'failed' : idleStep,
         status: exhausted ? 'failed' : 'pending',
-        error: message,
+        attempts,
+        error: exhausted
+          ? `Step "${job.step}" timed out after ${staleMinutes}m`
+          : `Step "${job.step}" interrupted — will retry`,
+        claimed_at: null,
       })
       .eq('id', job.id);
 
-    if (exhausted && job.sheet_row) {
-      await writeBackStatus({
-        sheetRow: job.sheet_row,
-        status: 'failed',
-        error: message.slice(0, 200),
-      });
+    if (exhausted) {
+      failed++;
+      if (job.sheet_row) {
+        await writeBackStatus({
+          sheetRow: job.sheet_row,
+          status: 'failed',
+          error: `Timed out during ${job.step}`,
+        });
+      }
+    } else {
+      reclaimed++;
     }
-
-    return { outcome: exhausted ? 'failed' : 'retry', error: message };
   }
+
+  return { reclaimed, failed };
 }
 
-/** One automation tick: sync → drip check → claim → generate → publish → record. */
+/** One automation tick: sync → drip check → claim ONE pipeline step → execute. */
 export async function runAutomationTick(): Promise<TickResult> {
   const dailyTarget = envInt('DAILY_TARGET', 10);
   const dailyCap = envInt('DAILY_CAP', 12);
-  const batchSize = envInt('BATCH_SIZE', 2);
 
-  await reclaimStaleProcessingJobs();
   const synced = await syncSheetToLedger();
-
   const publishedToday = await countPublishedToday();
 
-  if (publishedToday >= dailyCap) {
+  const capRemaining = Math.max(0, dailyCap - publishedToday);
+  if (capRemaining <= 0) {
     return {
       synced,
       claimed: 0,
@@ -283,27 +471,15 @@ export async function runAutomationTick(): Promise<TickResult> {
 
   const allowedNow = allowedPublishCountByNow(dailyTarget);
   const dripRemaining = Math.max(0, allowedNow - publishedToday);
-  const capRemaining = Math.max(0, dailyCap - publishedToday);
-  const claimCount = Math.min(batchSize, dripRemaining, capRemaining);
-
-  if (claimCount <= 0) {
-    return {
-      synced,
-      claimed: 0,
-      published: 0,
-      retried: 0,
-      failed: 0,
-      skippedReason: 'Drip pacing — not yet time for the next publish slot',
-    };
-  }
+  const allowNew = dripRemaining > 0;
 
   const supabase = createServiceClient();
-  const { data: jobs, error: claimErr } = await supabase.rpc('claim_content_jobs', {
-    batch: claimCount,
+  const { data: jobs, error: claimErr } = await supabase.rpc('claim_next_pipeline_job', {
+    allow_new: allowNew,
   });
 
   if (claimErr) {
-    throw new Error(`Claim jobs failed: ${claimErr.message}`);
+    throw new Error(`Claim pipeline job failed: ${claimErr.message}`);
   }
 
   const claimed = (jobs ?? []) as ContentJobRow[];
@@ -314,23 +490,25 @@ export async function runAutomationTick(): Promise<TickResult> {
       published: 0,
       retried: 0,
       failed: 0,
-      skippedReason: 'No pending jobs in ledger',
+      skippedReason: allowNew
+        ? 'No pipeline jobs ready'
+        : 'Drip pacing — no new articles; pipeline may still advance on next ticks',
     };
   }
 
+  const job = claimed[0];
+  const alertFailures: FailureAlert[] = [];
   let published = 0;
   let retried = 0;
   let failed = 0;
-  const alertFailures: FailureAlert[] = [];
 
-  for (const job of claimed) {
-    const { outcome, error } = await processJob(job);
-    if (outcome === 'published') published++;
-    else if (outcome === 'retry') retried++;
-    else {
-      failed++;
-      alertFailures.push({ title: job.title, error: error ?? 'Unknown error' });
-    }
+  const { outcome, error } = await processPipelineStep(job);
+  if (outcome === 'published') published++;
+  else if (outcome === 'advanced') { /* step completed; publish happens on a later tick */ }
+  else if (outcome === 'retry') retried++;
+  else {
+    failed++;
+    alertFailures.push({ title: job.title, error: error ?? 'Unknown error' });
   }
 
   if (alertFailures.length) {
@@ -339,7 +517,8 @@ export async function runAutomationTick(): Promise<TickResult> {
 
   return {
     synced,
-    claimed: claimed.length,
+    claimed: 1,
+    step: job.step,
     published,
     retried,
     failed,

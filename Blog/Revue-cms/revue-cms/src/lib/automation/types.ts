@@ -18,7 +18,7 @@ export interface SheetRow {
 }
 
 /** Status values the pipeline writes back to the sheet for human visibility. */
-export type SheetWritebackStatus = 'processing' | 'published' | 'failed';
+export type SheetWritebackStatus = 'processing' | 'pending' | 'published' | 'failed';
 
 export interface StatusWriteback {
   sheetRow: number;
@@ -61,6 +61,23 @@ export interface PublishedPostResult {
   url: string;
 }
 
+/** Saved between pipeline steps 1 and 3. */
+export interface JobDraft {
+  article: GeneratedArticle;
+  contentHtml: string;
+}
+
+/** Pipeline step stored on content_jobs.step */
+export type PipelineStep =
+  | 'pending'
+  | 'generating'
+  | 'draft_ready'
+  | 'imaging'
+  | 'image_ready'
+  | 'publishing'
+  | 'done'
+  | 'failed';
+
 /** A row of the `content_jobs` ledger table (mirrors supabase/automation.sql). */
 export interface ContentJobRow {
   id: string;
@@ -74,6 +91,9 @@ export interface ContentJobRow {
   prompt: string | null;
   image_url: string | null;
   status: 'pending' | 'processing' | 'done' | 'failed';
+  step: PipelineStep;
+  draft_json: JobDraft | null;
+  featured_image_url: string | null;
   attempts: number;
   max_attempts: number;
   error: string | null;
