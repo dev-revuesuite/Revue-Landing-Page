@@ -95,10 +95,28 @@ function idleStepAfterFailure(activeStep: PipelineStep): PipelineStep {
   }
 }
 
+const BACKLOG_STEPS: PipelineStep[] = [
+  'pending',
+  'draft_ready',
+  'image_ready',
+  'generating',
+  'imaging',
+  'publishing',
+];
+
 async function syncSheetToLedger(): Promise<number> {
+  const supabase = createServiceClient();
+  const { count: backlog } = await supabase
+    .from('content_jobs')
+    .select('*', { count: 'exact', head: true })
+    .in('step', BACKLOG_STEPS);
+
+  // Skip the slow Apps Script round-trip while jobs are already queued in Supabase.
+  if ((backlog ?? 0) > 0) return 0;
+
   let rows;
   try {
-    rows = await fetchPendingRows(100);
+    rows = await fetchPendingRows(10);
   } catch (err) {
     console.warn('[automation] sheet sync skipped:', err);
     return 0;
@@ -106,7 +124,6 @@ async function syncSheetToLedger(): Promise<number> {
 
   if (!rows.length) return 0;
 
-  const supabase = createServiceClient();
   let synced = 0;
 
   for (const row of rows) {
@@ -114,44 +131,26 @@ async function syncSheetToLedger(): Promise<number> {
 
     const { data: existing } = await supabase
       .from('content_jobs')
-      .select('id, step')
+      .select('id')
       .eq('source_key', row.sourceKey)
       .maybeSingle();
 
-    if (!existing) {
-      const { error } = await supabase.from('content_jobs').insert({
-        source_key: row.sourceKey,
-        sheet_row: row.sheetRow || null,
-        title: row.title,
-        keywords: row.keywords || null,
-        category: row.category || null,
-        tags: row.tags || null,
-        notes: row.notes || null,
-        prompt: row.prompt || null,
-        image_url: row.imageUrl || null,
-        status: 'pending',
-        step: 'pending',
-      });
-      if (!error) synced++;
-      continue;
-    }
+    if (existing) continue;
 
-    if (existing.step === 'pending') {
-      const { error } = await supabase
-        .from('content_jobs')
-        .update({
-          sheet_row: row.sheetRow || null,
-          title: row.title,
-          keywords: row.keywords || null,
-          category: row.category || null,
-          tags: row.tags || null,
-          notes: row.notes || null,
-          prompt: row.prompt || null,
-          image_url: row.imageUrl || null,
-        })
-        .eq('id', existing.id);
-      if (!error) synced++;
-    }
+    const { error } = await supabase.from('content_jobs').insert({
+      source_key: row.sourceKey,
+      sheet_row: row.sheetRow || null,
+      title: row.title,
+      keywords: row.keywords || null,
+      category: row.category || null,
+      tags: row.tags || null,
+      notes: row.notes || null,
+      prompt: row.prompt || null,
+      image_url: row.imageUrl || null,
+      status: 'pending',
+      step: 'pending',
+    });
+    if (!error) synced++;
   }
 
   return synced;
@@ -449,11 +448,12 @@ export async function runReclaimTick(): Promise<ReclaimResult> {
   return { reclaimed, failed };
 }
 
-/** One automation tick: sync → drip check → claim ONE pipeline step → execute. */
+/** One automation tick: reclaim → sync → drip check → claim ONE pipeline step → execute. */
 export async function runAutomationTick(): Promise<TickResult> {
   const dailyTarget = envInt('DAILY_TARGET', 10);
   const dailyCap = envInt('DAILY_CAP', 12);
 
+  await runReclaimTick();
   const synced = await syncSheetToLedger();
   const publishedToday = await countPublishedToday();
 

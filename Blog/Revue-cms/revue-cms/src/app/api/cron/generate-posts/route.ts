@@ -1,30 +1,33 @@
+import { after } from 'next/server';
 import { verifyCronAuth } from '@/lib/automation/cron-auth';
 import { runAutomationTick } from '@/lib/automation/worker';
 
 export const runtime = 'nodejs';
-/** Vercel Hobby hard limit is 60s — each pipeline step targets well under this. */
+/** Vercel Hobby hard limit is 60s — work continues via after() after an immediate 202. */
 export const maxDuration = 60;
 
-async function handleTick(request: Request) {
+/** Main pipeline cron — one step per tick (generate, image, or publish). */
+export async function POST(request: Request) {
   if (!verifyCronAuth(request)) {
     return Response.json({ success: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  try {
-    const result = await runAutomationTick();
-    return Response.json({ success: true, ...result });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error('[automation] tick failed:', message);
-    return Response.json({ success: false, error: message }, { status: 500 });
-  }
-}
+  after(async () => {
+    try {
+      const result = await runAutomationTick();
+      console.info('[automation] tick finished:', JSON.stringify(result));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error('[automation] tick failed:', message);
+    }
+  });
 
-/** Main pipeline cron — one step per tick (generate, image, or publish). */
-export async function POST(request: Request) {
-  return handleTick(request);
+  return Response.json(
+    { success: true, accepted: true, message: 'Pipeline tick started' },
+    { status: 202 },
+  );
 }
 
 export async function GET(request: Request) {
-  return handleTick(request);
+  return POST(request);
 }

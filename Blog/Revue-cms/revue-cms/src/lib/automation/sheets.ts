@@ -12,7 +12,7 @@ import type { SheetRow, StatusWriteback, FailureAlert } from './types';
  *   throw, because the durable source of truth is the `content_jobs` table.
  */
 
-const REQUEST_TIMEOUT_MS = 15_000;
+const REQUEST_TIMEOUT_MS = Number.parseInt(process.env.GOOGLE_SHEETS_TIMEOUT_MS ?? '', 10) || 30_000;
 
 function webhookUrl(): string {
   const url = process.env.GOOGLE_SHEETS_WEBHOOK_URL;
@@ -87,15 +87,24 @@ export async function fetchPendingRows(limit = 50): Promise<SheetRow[]> {
 }
 
 async function postAction(payload: Record<string, unknown>): Promise<void> {
-  const res = await fetchWithTimeout(webhookUrl(), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...payload, secret: secret() }),
-  });
-  const body = await parseJsonBody(res);
-  if (!res.ok || body.success !== true) {
-    throw new Error(`Sheet webhook action failed: ${String(body.error ?? res.status)}`);
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const res = await fetchWithTimeout(webhookUrl(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...payload, secret: secret() }),
+      });
+      const body = await parseJsonBody(res);
+      if (!res.ok || body.success !== true) {
+        throw new Error(`Sheet webhook action failed: ${String(body.error ?? res.status)}`);
+      }
+      return;
+    } catch (err) {
+      lastErr = err;
+    }
   }
+  throw lastErr;
 }
 
 /** Best-effort: write status/url/error back to a sheet row. Never throws. */

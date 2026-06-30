@@ -11,9 +11,9 @@ import type { SheetRow, GeneratedArticle } from './types';
  */
 
 const TEXT_MODEL = process.env.GEMINI_TEXT_MODEL || 'gemini-2.5-flash-lite';
-const GENERATION_TIMEOUT_MS = 50_000;
+const GENERATION_TIMEOUT_MS = 48_000;
 const IN_CALL_RETRIES = 2;
-const MAX_OUTPUT_TOKENS = 16384;
+const MAX_OUTPUT_TOKENS = 8192;
 
 const META_TITLE_MAX = 70;
 const META_DESC_MAX = 160;
